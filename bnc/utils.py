@@ -30,9 +30,9 @@ def display_board(board) -> None:
     for i, row in enumerate(board.board):
         if row.is_filled:
             guess_str = "".join(map(str, row.guess))
-            print(f"Guess {i+1}: {guess_str} | Bulls: {row.bulls} | Cows: {row.cows}")
+            print(f"Guess {i + 1}: {guess_str} | Bulls: {row.bulls} | Cows: {row.cows}")
         else:
-            print(f"Guess {i+1}: {'_' * board.code_length}")
+            print(f"Guess {i + 1}: {'_' * board.code_length}")
 
 
 def validate_secret_code(
