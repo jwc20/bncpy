@@ -47,7 +47,6 @@ class Game:
 
     @property
     def winner(self) -> Player | None:
-        """get first place winner"""
         if not self._winners:
             return None
         return self._winners[0]

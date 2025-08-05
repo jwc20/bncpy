@@ -7,8 +7,8 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 if __name__ == "__main__":
     _code_length = 4
-    _number_of_colors = 3
-    _secret_code = "1111"
+    _number_of_colors = 6
+    _secret_code = "1234"
 
     board = Board(code_length=_code_length, num_of_colors=_number_of_colors)
 
@@ -21,8 +21,6 @@ if __name__ == "__main__":
 
     game = Game(players, secret_code=_secret_code)
     print(game.state)
-    print("###############")
-    print("###############")
     print(" ")
 
     for _ in range(10):
@@ -38,10 +36,8 @@ if __name__ == "__main__":
 
     print(game.state)
 
-    game.submit_guess(game.players[0], "1111")
+    game.submit_guess(game.players[0], "1234")
     game.submit_guess(game.players[0], "1112")  # cannot guess since the game is over
-
-    print(game.state)
 
     print(f"player: {game.players[0].name}")
     display_board(game.players[0].board)

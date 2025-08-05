@@ -28,6 +28,13 @@ class Board:
         num_of_guesses: int = 10,
         secret_code: str | None = None,
     ) -> None:
+        if code_length < 3:
+            raise ValueError(f"code_length must be at least 3, got {code_length}")
+        if num_of_colors < 5:
+            raise ValueError(f"num_of_colors must be at least 5, got {num_of_colors}")
+        if num_of_guesses < 1:
+            raise ValueError(f"num_of_guesses must be at least 1, got {num_of_guesses}")
+
         self._secret_code = secret_code
         self._code_length = code_length
         self._num_of_colors = num_of_colors
