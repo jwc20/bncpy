@@ -1,10 +1,16 @@
 from bnc import Board, Game, Player
 from bnc.utils import generate_guess
+import logging
+
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 if __name__ == "__main__":
     _code_length = 4
     _number_of_colors = 3
-    _secret_code = "1222"
+    _secret_code = "1111"
 
     board = Board(code_length=_code_length, num_of_colors=_number_of_colors)
 
@@ -34,34 +40,34 @@ if __name__ == "__main__":
 
     print(game.state)
 
-    game.submit_guess(game.players[0], "1222")
+    game.submit_guess(game.players[0], "1111")
     game.submit_guess(game.players[0], "1112")  # cannot guess since the game is over
 
     print(game.state)
 
     print(f"player: {game.players[0].name}")
-    players[0].board.display_board()
+    game.players[0].board.display_board()
     print(game.players[0].game_won)
     print(game.players[0].game_over)
     print("###############")
     print(" ")
 
     print(f"player: {game.players[1].name}")
-    players[1].board.display_board()
+    game.players[1].board.display_board()
     print(game.players[1].game_won)
     print(game.players[1].game_over)
     print("###############")
     print(" ")
 
     print(f"player: {game.players[2].name}")
-    players[2].board.display_board()
+    game.players[2].board.display_board()
     print("###############")
     print(game.players[2].game_won)
     print(game.players[2].game_over)
     print(" ")
 
     print(f"player: {game.players[3].name}")
-    players[3].board.display_board()
+    game.players[3].board.display_board()
     print(game.players[3].game_won)
     print(game.players[3].game_over)
     print("###############")
