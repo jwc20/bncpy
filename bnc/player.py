@@ -1,7 +1,8 @@
-# ./bnc/player.py
-
 from bnc import Board
 from .utils import validate_code_input
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Player:
@@ -23,6 +24,7 @@ class Player:
 
     def make_guess(self, guess: str) -> None:
         if self.game_over:
+            logger.info(f"{self.name} has no more guesses.")
             return
 
         guess_digits = validate_code_input(

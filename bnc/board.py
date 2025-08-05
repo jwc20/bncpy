@@ -1,5 +1,3 @@
-# ./bnc/board.py
-
 from collections import Counter
 from dataclasses import dataclass
 from .utils import validate_code_input
@@ -72,12 +70,6 @@ class Board:
         )
         return secret_digits
 
-    # @secret_code.setter
-    # def secret_code(self, secret_code: str):
-    #     if secret_code is not None:
-    #         self.check_secret_code(secret_code)
-    #         self._secret_code = secret_code
-    #         self._secret_digits = list(map(int, secret_code))
     @secret_code.setter
     def secret_code(self, secret_code: str):
         if secret_code is not None:

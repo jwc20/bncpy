@@ -1,8 +1,9 @@
-# ./bnc/game.py
-
 from .player import Player
 from enum import Enum
 from collections import deque
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class GameState(Enum):
@@ -54,6 +55,7 @@ class Game:
     def submit_guess(self, player: Player, guess: str) -> None:
         if player in self._winners:
             # print(f"{player.name} already won the game")
+            logger.info(f"{player.name} already won the game")
             return
 
         player.make_guess(guess)
@@ -64,6 +66,8 @@ class Game:
             position_text = {1: "first", 2: "second", 3: "third"}.get(
                 position, f"{position}th"
             )
-            print(f"{player.name} won the game in {position_text} place!")
+            # print(f"{player.name} won the game in {position_text} place!")
+            logger.info(f"{player.name} won the game in {position_text} place!")
         elif player.game_over and not player.game_won:
-            print(f"{player.name} has no more guesses.")
+            # print(f"{player.name} has no more guesses.")
+            logger.info(f"{player.name} has no more guesses.")
