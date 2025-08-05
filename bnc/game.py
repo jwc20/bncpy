@@ -55,9 +55,6 @@ class Game:
 
     def submit_guess(self, player: Player, guess: str) -> None:
         if player in self._winners:
-            # print(f"{player.name} already won the game")
-            # logger.info(f"{player.name} already won the game")
-            # logger.info(player.name, " already won the game")
             logger.info("%s already won the game", player.name)
             return
 
@@ -69,15 +66,6 @@ class Game:
             position_text = {1: "first", 2: "second", 3: "third"}.get(
                 position, f"{position}th"
             )
-            # print(f"{player.name} won the game in {position_text} place!")
-            # logger.info(player.name, " won the game in ", position_text, " place!")
-            # logger.info(
-            #     "'{0}' won the game in {1} place!".format(player.name, position_text)
-            # )
             logger.info("%s won the game in %s place!", player.name, position_text)
         elif player.game_over and not player.game_won:
-            # print(f"{player.name} has no more guesses.")
-            # logger.info(f"{player.name} has no more guesses.")
-            # logger.info(player.name, " has no more guesses.")
-            # logger.info("'{0}' has no more guesses.".format(player.name))
             logger.info("%s has no more guesses.", player.name)
