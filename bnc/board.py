@@ -80,12 +80,6 @@ class Board:
                     f"Digit {digit} is out of color range (0-{self._num_of_colors - 1})"
                 )
 
-        # for digit in secret_digits:
-        #     if digit >= self._num_of_colors:
-        #         raise Exception(
-        #             f"Digit {digit} is out of color range (0-{self._num_of_colors - 1})"
-        #         )
-
     @secret_code.setter
     def secret_code(self, secret_code: str):
         if secret_code is not None:
