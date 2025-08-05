@@ -41,6 +41,10 @@ class Board:
             self._board.append(BoardRow([0] * self._code_length))
 
     @property
+    def num_of_guesses(self):
+        return self._num_of_guesses
+
+    @property
     def secret_code(self):
         return self._secret_code
 
@@ -60,29 +64,61 @@ class Board:
     def game_over(self):
         return self._game_over
 
+    def check_secret_code(self, secret_code: str | None = None):
+        if len(secret_code) != self._code_length:
+            raise Exception(
+                f"secret code must be exactly {self._code_length} digits long"
+            )
+        if not secret_code.isdigit():
+            raise Exception("secret code must be a number")
+
+        secret_digits = list(map(int, secret_code))
+
+        for digit in secret_digits:
+            if not self.check_color(digit):
+                raise Exception(
+                    f"Digit {digit} is out of color range (0-{self._num_of_colors - 1})"
+                )
+
+        # for digit in secret_digits:
+        #     if digit >= self._num_of_colors:
+        #         raise Exception(
+        #             f"Digit {digit} is out of color range (0-{self._num_of_colors - 1})"
+        #         )
+
     @secret_code.setter
     def secret_code(self, secret_code: str):
-        self._secret_digits = list(map(int, secret_code))
-        self._secret_code = secret_code
+        if secret_code is not None:
+            self.check_secret_code(secret_code)
+            self._secret_code = secret_code
+            self._secret_digits = list(map(int, secret_code))
 
     @property
-    def current_guess_index(self) -> int:
+    def current_board_row_index(self) -> int:
         for i, row in enumerate(self._board):
             if not row.is_filled:
                 return i
         return self._num_of_guesses
 
     def set_bnc_row(
-        self, bulls: int, cows: int, guess_digits: list[int], row_index: int
+        self, bulls: int, cows: int, guess_digits: list[int], board_row_index: int
     ):
-        self._board[row_index] = BoardRow(
+        self._board[board_row_index] = BoardRow(
             guess=guess_digits, bulls=bulls, cows=cows, is_filled=True
         )
 
-    def evaluate_guess(self, row_index: int, guess_digits: list[int]) -> None:
-        # check if row_index is valid
-        if row_index >= self._num_of_guesses:
+    def check_color(self, color: int) -> bool:
+        return 0 <= color < self._num_of_colors
+
+    def check_board_row_index(self, board_row_index: int) -> bool:
+        return 0 <= board_row_index < self._num_of_guesses
+
+    def evaluate_guess(self, board_row_index: int, guess_digits: list[int]) -> None:
+        # check if board_row_index is valid
+        if board_row_index == self._num_of_guesses - 1:
             self._game_over = True
+
+        if not self.check_board_row_index(board_row_index):
             raise Exception("Row index is out of range")
 
         bulls_count = 0
@@ -99,9 +135,9 @@ class Board:
                 total_matches += min(guess_counter[digit], secret_counter[digit])
 
         cows_count = total_matches - bulls_count
-        self.set_bnc_row(bulls_count, cows_count, guess_digits, row_index)
+        self.set_bnc_row(bulls_count, cows_count, guess_digits, board_row_index)
 
-        if self._board[row_index].is_winning_row:
+        if self._board[board_row_index].is_winning_row:
             self._game_won = True
             self._game_over = True
 
@@ -115,6 +151,3 @@ class Board:
             num_of_colors=self._num_of_colors,
             num_of_guesses=self._num_of_guesses,
         )
-
-    def check_color(self, color: int) -> bool:
-        return 0 <= color < self._num_of_colors
