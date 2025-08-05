@@ -1,19 +1,55 @@
 from .player import Player
+from enum import Enum
+from collections import deque
+
+
+class GameState(Enum):
+    SETUP = 0
+    IN_PROGRESS = 1
+    FINISHED = 2
 
 
 class Game:
-    def __init__(self, players: list[Player], secret_code: str | None = None) -> None:
+    def __init__(
+        self,
+        players: list[Player],
+        secret_code: str | None = None,
+    ) -> None:
         self._players = players
+        self._winners = deque()
         if secret_code:
             self.set_secret_code(secret_code)
-
-    @property
-    def players(self) -> list[Player]:
-        return self._players
 
     def set_secret_code(self, secret_code: str | None) -> None:
         for player in self._players:
             player.board.secret_code = secret_code
 
+    @property
+    def players(self) -> list[Player]:
+        return self._players
+
+    @property
+    def winner(self) -> Player | None:
+        """get first place winner"""
+        return self._winners[0]
+
+    @property
+    def winners(self) -> deque[Player]:
+        return self._winners
+
     def submit_guess(self, player: Player, guess: str) -> None:
+        if player in self._winners:
+            print(f"{player.name} already won the game")
+            return
+
         player.make_guess(guess)
+
+        if player.game_won and player not in self._winners:
+            self._winners.append(player)
+            position = len(self._winners)
+            position_text = {1: "first", 2: "second", 3: "third"}.get(
+                position, f"{position}th"
+            )
+            print(f"{player.name} won the game in {position_text} place!")
+        elif player.game_over and not player.game_won:
+            print(f"{player.name} has no more guesses.")
