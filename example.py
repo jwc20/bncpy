@@ -3,9 +3,7 @@ from bnc.utils import generate_guess
 import logging
 
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 if __name__ == "__main__":
     _code_length = 4
@@ -27,7 +25,7 @@ if __name__ == "__main__":
     print("###############")
     print(" ")
 
-    for i in range(10):
+    for _ in range(10):
         game.submit_guess(
             game.players[1], generate_guess(_code_length, _number_of_colors)
         )

@@ -24,7 +24,10 @@ class Player:
 
     def make_guess(self, guess: str) -> None:
         if self.game_over:
-            logger.info(f"{self.name} has no more guesses.")
+            # logger.info(f"{self.name} has no more guesses.")
+            # logger.info(self.name, " has no more guesses.")
+            # logger.info("'{0}' has no more guesses.".format(self.name))
+            logger.info("%s has no more guesses.", self.name)
             return
 
         guess_digits = validate_code_input(
