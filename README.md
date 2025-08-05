@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-pip install bnc
+pip install bncpy
 ```
 
 ## Usage
