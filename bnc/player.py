@@ -5,7 +5,11 @@ from collections import Counter
 class Player:
     def __init__(self, name: str, board: Board) -> None:
         self.name = name
-        self.board = board
+        self._board = board
+
+    @property
+    def board(self):
+        return self._board
 
     def make_guess(self, guess: str) -> None:
         guess_digits = list(map(int, guess))

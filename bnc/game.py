@@ -4,7 +4,9 @@ from .player import Player
 class Game:
     def __init__(self, players: list[Player], secret_code: str | None = None) -> None:
         self._players = players
+        if secret_code:
+            self.set_secret_code(secret_code)
 
-    def set_secret_code(self, secret_code: str) -> None:
+    def set_secret_code(self, secret_code: str | None) -> None:
         for player in self._players:
-            player.board.set_secret_code(secret_code)
+            player.board.secret_code = secret_code
