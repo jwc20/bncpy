@@ -2,8 +2,6 @@ import logging
 
 from bnc import Board
 
-from .utils import validate_code_input
-
 logger = logging.getLogger(__name__)
 
 
@@ -28,8 +26,10 @@ class Player:
         if self.game_over:
             logger.info("%s has no more guesses.", self.name)
             return
+        self._board.evaluate_guess(self._board.current_board_row_index, guess)
 
-        guess_digits = validate_code_input(
-            guess, self._board.code_length, self._board.num_of_colors
-        )
-        self._board.evaluate_guess(self._board.current_board_row_index, guess_digits)
+    def set_secret_code(self, secret_code: str | None) -> None:
+        self._board.secret_code = secret_code
+
+    # def display_board(self):
+    #     self._board.get_board_display()

@@ -14,19 +14,24 @@ class GameState(Enum):
 
 
 class Game:
+    POSITION_TEXT = {1: "first", 2: "second", 3: "third"}
+
     def __init__(
         self,
         players: list[Player],
         secret_code: str | None = None,
     ) -> None:
+        if not players:
+            raise ValueError("Players cannot be empty")
         self._players = players
         self._winners = deque()
-        if secret_code:
-            self.set_secret_code(secret_code)
+        self._state = GameState.SETUP
+        self._has_started = False
+        self.set_secret_code(secret_code)
 
     def set_secret_code(self, secret_code: str | None) -> None:
         for player in self._players:
-            player.board.secret_code = secret_code
+            player.set_secret_code(secret_code)
 
     @property
     def players(self) -> list[Player]:
@@ -40,20 +45,20 @@ class Game:
         return self._winners[0]
 
     @property
-    def winners(self) -> deque[Player] | None:
-        if not self._winners:
-            return None
+    def winners(self) -> deque[Player]:
         return self._winners
 
     @property
     def state(self) -> GameState:
         if all(player.game_over for player in self._players):
             return GameState.FINISHED
-        if all(player.board.current_board_row_index == 0 for player in self._players):
+        if not self._has_started:
             return GameState.SETUP
         return GameState.IN_PROGRESS
 
     def submit_guess(self, player: Player, guess: str) -> None:
+        if not self._has_started:
+            self._has_started = True
         if player in self._winners:
             logger.info("%s already won the game", player.name)
             return
@@ -63,9 +68,7 @@ class Game:
         if player.game_won and player not in self._winners:
             self._winners.append(player)
             position = len(self._winners)
-            position_text = {1: "first", 2: "second", 3: "third"}.get(
-                position, f"{position}th"
-            )
+            position_text = self.POSITION_TEXT.get(position, f"{position}th")
             logger.info("%s won the game in %s place!", player.name, position_text)
         elif player.game_over and not player.game_won:
             logger.info("%s has no more guesses.", player.name)

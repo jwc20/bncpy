@@ -1,7 +1,7 @@
 import logging
 
 from bnc import Board, Game, Player
-from bnc.utils import generate_guess
+from bnc.utils import generate_guess, display_board
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
@@ -44,28 +44,28 @@ if __name__ == "__main__":
     print(game.state)
 
     print(f"player: {game.players[0].name}")
-    game.players[0].board.display_board()
+    display_board(game.players[0].board)
     print(game.players[0].game_won)
     print(game.players[0].game_over)
     print("###############")
     print(" ")
 
     print(f"player: {game.players[1].name}")
-    game.players[1].board.display_board()
+    display_board(game.players[1].board)
     print(game.players[1].game_won)
     print(game.players[1].game_over)
     print("###############")
     print(" ")
 
     print(f"player: {game.players[2].name}")
-    game.players[2].board.display_board()
+    display_board(game.players[2].board)
     print("###############")
     print(game.players[2].game_won)
     print(game.players[2].game_over)
     print(" ")
 
     print(f"player: {game.players[3].name}")
-    game.players[3].board.display_board()
+    display_board(game.players[3].board)
     print(game.players[3].game_won)
     print(game.players[3].game_over)
     print("###############")
