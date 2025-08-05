@@ -36,11 +36,6 @@ where = ["."]
 include = ["bnc*"]
 exclude = ["tests*"]
 
-[dependency-groups]
-dev = [
-    "ruff>=0.12.7",
-]
-
 [tool.ruff]
 exclude = [
     ".bzr",
@@ -69,7 +64,6 @@ exclude = [
     "dist",
     "node_modules",
     "site-packages",
-    "venv",
 ]
 
 line-length = 88
