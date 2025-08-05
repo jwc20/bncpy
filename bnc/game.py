@@ -31,11 +31,37 @@ class Game:
     @property
     def winner(self) -> Player | None:
         """get first place winner"""
+        if not self._winners:
+            return None
         return self._winners[0]
 
     @property
-    def winners(self) -> deque[Player]:
+    def winners(self) -> deque[Player] | None:
+        if not self._winners:
+            return None
         return self._winners
+
+    @property
+    def state(self) -> GameState:
+        current_winners = [player for player in self._players if player.game_won]
+
+        # add winners if not already
+        # may not be necessary
+        for player in current_winners:
+            if player not in self._winners:
+                self._winners.append(player)
+
+        if all(player.game_over for player in self._players):
+            return GameState.FINISHED
+        if all(player.board.current_board_row_index == 0 for player in self._players):
+            return GameState.SETUP
+
+        # if any(
+        #     player.board.current_board_row_index < player.board.num_of_guesses
+        #     for player in self._players
+        # ):
+        #     return GameState.IN_PROGRESS
+        return GameState.IN_PROGRESS
 
     def submit_guess(self, player: Player, guess: str) -> None:
         if player in self._winners:
