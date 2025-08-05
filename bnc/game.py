@@ -1,7 +1,8 @@
-from .player import Player
-from enum import Enum
-from collections import deque
 import logging
+from collections import deque
+from enum import Enum
+
+from .player import Player
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,8 @@
-from bnc import Board
-from .utils import validate_code_input
 import logging
+
+from bnc import Board
+
+from .utils import validate_code_input
 
 logger = logging.getLogger(__name__)
 

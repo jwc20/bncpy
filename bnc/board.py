@@ -1,5 +1,6 @@
 from collections import Counter
 from dataclasses import dataclass
+
 from .utils import validate_code_input
 
 

@@ -1,7 +1,7 @@
-from bnc import Board, Game, Player
-from bnc.utils import generate_guess
 import logging
 
+from bnc import Board, Game, Player
+from bnc.utils import generate_guess
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
