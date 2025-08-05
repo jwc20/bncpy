@@ -1,4 +1,4 @@
-from bnc import Board, Player, Game
+from bnc import Board, Game, Player
 
 if __name__ == "__main__":
     board = Board()
