@@ -34,6 +34,14 @@ class Game:
             player.set_secret_code(secret_code)
 
     @property
+    def state(self) -> GameState:
+        if all(player.game_over for player in self._players):
+            return GameState.FINISHED
+        if not self._has_started:
+            return GameState.SETUP
+        return GameState.IN_PROGRESS
+
+    @property
     def players(self) -> list[Player]:
         return self._players
 
@@ -47,14 +55,6 @@ class Game:
     @property
     def winners(self) -> deque[Player]:
         return self._winners
-
-    @property
-    def state(self) -> GameState:
-        if all(player.game_over for player in self._players):
-            return GameState.FINISHED
-        if not self._has_started:
-            return GameState.SETUP
-        return GameState.IN_PROGRESS
 
     def submit_guess(self, player: Player, guess: str) -> None:
         if not self._has_started:

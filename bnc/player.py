@@ -22,14 +22,11 @@ class Player:
     def game_won(self):
         return self._board.game_won
 
+    def set_secret_code(self, secret_code: str | None) -> None:
+        self._board.secret_code = secret_code
+
     def make_guess(self, guess: str) -> None:
         if self.game_over:
             logger.info("%s has no more guesses.", self.name)
             return
         self._board.evaluate_guess(self._board.current_board_row_index, guess)
-
-    def set_secret_code(self, secret_code: str | None) -> None:
-        self._board.secret_code = secret_code
-
-    # def display_board(self):
-    #     self._board.get_board_display()

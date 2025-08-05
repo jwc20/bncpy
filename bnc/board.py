@@ -1,7 +1,11 @@
 from collections import Counter
 from dataclasses import dataclass
 
-from .utils import validate_code_input
+from .utils import (
+    check_board_row_index,
+    check_secret_code,
+    validate_code_input,
+)
 
 
 @dataclass
@@ -50,6 +54,13 @@ class Board:
     def secret_code(self):
         return self._secret_code
 
+    @secret_code.setter
+    def secret_code(self, secret_code: str) -> None:
+        self._secret_digits = check_secret_code(
+            secret_code, self._code_length, self._num_of_colors
+        )
+        self._secret_code = secret_code
+
     @property
     def num_of_colors(self):
         return self._num_of_colors
@@ -66,20 +77,6 @@ class Board:
     def game_over(self):
         return self._game_over
 
-    def check_secret_code(self, secret_code: str):
-        if secret_code is None:
-            raise ValueError("secret code cannot be None")
-
-        secret_digits = validate_code_input(
-            secret_code, self._code_length, self._num_of_colors
-        )
-        return secret_digits
-
-    @secret_code.setter
-    def secret_code(self, secret_code: str) -> None:
-        self._secret_digits = self.check_secret_code(secret_code)
-        self._secret_code = secret_code
-
     @property
     def current_board_row_index(self) -> int:
         for i, row in enumerate(self._board):
@@ -87,18 +84,20 @@ class Board:
                 return i
         raise ValueError("Board is filled")
 
-    def set_bnc_row(
+    def copy(self):
+        return Board(
+            code_length=self._code_length,
+            num_of_colors=self._num_of_colors,
+            num_of_guesses=self._num_of_guesses,
+            secret_code=self._secret_code,
+        )
+
+    def set_board_row(
         self, bulls: int, cows: int, guess_digits: list[int], board_row_index: int
     ):
         self._board[board_row_index] = BoardRow(
             guess=guess_digits, bulls=bulls, cows=cows, is_filled=True
         )
-
-    def check_color(self, color: int) -> bool:
-        return 0 <= color < self._num_of_colors
-
-    def check_board_row_index(self, board_row_index: int) -> bool:
-        return 0 <= board_row_index < self._num_of_guesses
 
     def calculate_bulls_and_cows(self, guess_digits: list[int]) -> tuple[int, int]:
         bulls_count = 0
@@ -118,27 +117,15 @@ class Board:
         return bulls_count, cows_count
 
     def evaluate_guess(self, board_row_index: int, guess: str) -> None:
-        if not self.check_board_row_index(board_row_index):
+        if not check_board_row_index(board_row_index, self._num_of_guesses):
             raise ValueError("Row index is out of range")
 
         guess_digits = validate_code_input(guess, self.code_length, self.num_of_colors)
         bulls_count, cows_count = self.calculate_bulls_and_cows(guess_digits)
-        self.set_bnc_row(bulls_count, cows_count, guess_digits, board_row_index)
+        self.set_board_row(bulls_count, cows_count, guess_digits, board_row_index)
 
         if self._board[board_row_index].is_winning_row:
             self._game_won = True
             self._game_over = True
         elif board_row_index == self._num_of_guesses - 1:
             self._game_over = True
-
-    # def get_board_display(self):
-    #     for i, row in enumerate(self._board):
-    #         print(f"{i}: {row}")
-
-    def copy(self):
-        return Board(
-            code_length=self._code_length,
-            num_of_colors=self._num_of_colors,
-            num_of_guesses=self._num_of_guesses,
-            secret_code=self._secret_code,
-        )
