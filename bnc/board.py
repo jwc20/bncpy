@@ -1,5 +1,8 @@
+# ./bnc/board.py
+
 from collections import Counter
 from dataclasses import dataclass
+from .utils import validate_code_input
 
 
 @dataclass
@@ -10,12 +13,8 @@ class BoardRow:
     is_filled: bool = False
 
     @property
-    def guess_length(self):
-        return len(self.guess)
-
-    @property
     def is_winning_row(self):
-        return self.is_filled and self.bulls == self.guess_length
+        return self.is_filled and self.bulls == len(self.guess)
 
 
 class Board:
@@ -65,27 +64,25 @@ class Board:
         return self._game_over
 
     def check_secret_code(self, secret_code: str | None = None):
-        if len(secret_code) != self._code_length:
-            raise Exception(
-                f"secret code must be exactly {self._code_length} digits long"
-            )
-        if not secret_code.isdigit():
-            raise Exception("secret code must be a number")
+        if secret_code is None:
+            raise ValueError("secret code cannot be None")
 
-        secret_digits = list(map(int, secret_code))
+        secret_digits = validate_code_input(
+            secret_code, self._code_length, self._num_of_colors
+        )
+        return secret_digits
 
-        for digit in secret_digits:
-            if not self.check_color(digit):
-                raise Exception(
-                    f"Digit {digit} is out of color range (0-{self._num_of_colors - 1})"
-                )
-
+    # @secret_code.setter
+    # def secret_code(self, secret_code: str):
+    #     if secret_code is not None:
+    #         self.check_secret_code(secret_code)
+    #         self._secret_code = secret_code
+    #         self._secret_digits = list(map(int, secret_code))
     @secret_code.setter
     def secret_code(self, secret_code: str):
         if secret_code is not None:
-            self.check_secret_code(secret_code)
+            self._secret_digits = self.check_secret_code(secret_code)
             self._secret_code = secret_code
-            self._secret_digits = list(map(int, secret_code))
 
     @property
     def current_board_row_index(self) -> int:
@@ -108,12 +105,8 @@ class Board:
         return 0 <= board_row_index < self._num_of_guesses
 
     def evaluate_guess(self, board_row_index: int, guess_digits: list[int]) -> None:
-        # check if board_row_index is valid
-        if board_row_index == self._num_of_guesses - 1:
-            self._game_over = True
-
         if not self.check_board_row_index(board_row_index):
-            raise Exception("Row index is out of range")
+            raise ValueError("Row index is out of range")
 
         bulls_count = 0
         for i in range(len(self._secret_digits)):
@@ -134,6 +127,8 @@ class Board:
         if self._board[board_row_index].is_winning_row:
             self._game_won = True
             self._game_over = True
+        elif board_row_index == self._num_of_guesses - 1:
+            self._game_over = True
 
     def display_board(self):
         for i, row in enumerate(self._board):
@@ -144,4 +139,5 @@ class Board:
             code_length=self._code_length,
             num_of_colors=self._num_of_colors,
             num_of_guesses=self._num_of_guesses,
+            secret_code=self._secret_code,
         )

@@ -1,3 +1,5 @@
+# ./bnc/game.py
+
 from .player import Player
 from enum import Enum
 from collections import deque
@@ -51,7 +53,7 @@ class Game:
 
     def submit_guess(self, player: Player, guess: str) -> None:
         if player in self._winners:
-            print(f"{player.name} already won the game")
+            # print(f"{player.name} already won the game")
             return
 
         player.make_guess(guess)

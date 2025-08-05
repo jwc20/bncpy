@@ -1,4 +1,7 @@
+# ./bnc/player.py
+
 from bnc import Board
+from .utils import validate_code_input
 
 
 class Player:
@@ -20,23 +23,9 @@ class Player:
 
     def make_guess(self, guess: str) -> None:
         if self.game_over:
-            print("Game over")
             return
 
-        if len(guess) != self._board.code_length:
-            raise ValueError(
-                f"guess must be exactly {self._board.code_length} characters"
-            )
-
-        if not guess.isdigit():
-            raise ValueError("guess must be a number")
-
-        guess_digits = list(map(int, guess))
-
-        for digit in guess_digits:
-            if not self._board.check_color(digit):
-                raise ValueError(
-                    f"Digit {digit} is out of color range (0-{self._board.num_of_colors - 1})"
-                )
-
+        guess_digits = validate_code_input(
+            guess, self._board.code_length, self._board.num_of_colors
+        )
         self._board.evaluate_guess(self._board.current_board_row_index, guess_digits)
