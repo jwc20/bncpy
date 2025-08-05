@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 from .utils import (
     check_board_row_index,
-    check_secret_code,
     validate_code_input,
+    validate_secret_code,
 )
 
 
@@ -32,15 +32,16 @@ class Board:
         self._code_length = code_length
         self._num_of_colors = num_of_colors
         self._num_of_guesses = num_of_guesses
-        self._board: list[BoardRow] = []
+        self._board: list[BoardRow] = self._init_board()
         self._secret_digits: list[int] = []
         self._game_won = False
         self._game_over = False
-        self._init_board()
 
     def _init_board(self):
+        board = []
         for _ in range(self._num_of_guesses):
-            self._board.append(BoardRow([0] * self._code_length))
+            board.append(BoardRow([0] * self._code_length))
+        return board
 
     @property
     def board(self):
@@ -56,7 +57,7 @@ class Board:
 
     @secret_code.setter
     def secret_code(self, secret_code: str) -> None:
-        self._secret_digits = check_secret_code(
+        self._secret_digits = validate_secret_code(
             secret_code, self._code_length, self._num_of_colors
         )
         self._secret_code = secret_code
@@ -82,9 +83,9 @@ class Board:
         for i, row in enumerate(self._board):
             if not row.is_filled:
                 return i
-        raise ValueError("Board is filled")
+        return -1
 
-    def copy(self):
+    def create_new_board(self):
         return Board(
             code_length=self._code_length,
             num_of_colors=self._num_of_colors,
@@ -100,6 +101,11 @@ class Board:
         )
 
     def calculate_bulls_and_cows(self, guess_digits: list[int]) -> tuple[int, int]:
+        if not self._secret_digits:
+            raise ValueError(
+                "Secret code must be set before calculating bulls and cows"
+            )
+
         bulls_count = 0
         for i in range(len(self._secret_digits)):
             if self._secret_digits[i] == guess_digits[i]:

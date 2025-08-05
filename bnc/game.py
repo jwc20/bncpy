@@ -27,18 +27,18 @@ class Game:
         self._winners = deque()
         self._state = GameState.SETUP
         self._has_started = False
-        self.set_secret_code(secret_code)
+        self.set_secret_code_for_all_players(secret_code)
 
-    def set_secret_code(self, secret_code: str | None) -> None:
+    def set_secret_code_for_all_players(self, secret_code: str | None) -> None:
         for player in self._players:
-            player.set_secret_code(secret_code)
+            player.set_secret_code_to_board(secret_code)
 
     @property
     def state(self) -> GameState:
-        if all(player.game_over for player in self._players):
-            return GameState.FINISHED
         if not self._has_started:
             return GameState.SETUP
+        if all(player.game_over for player in self._players):
+            return GameState.FINISHED
         return GameState.IN_PROGRESS
 
     @property
@@ -61,6 +61,9 @@ class Game:
             self._has_started = True
         if player in self._winners:
             logger.info("%s already won the game", player.name)
+            return
+        if player.game_over:
+            logger.info("%s can no longer play.", player.name)
             return
 
         player.make_guess(guess)

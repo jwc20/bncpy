@@ -8,9 +8,8 @@ __all__ = [
     "Game",
     "Player",
     "check_board_row_index",
-    "check_board_row_index",
-    "check_secret_code",
     "display_board",
     "generate_guess",
     "validate_code_input",
+    "validate_secret_code",
 ]

@@ -13,10 +13,10 @@ if __name__ == "__main__":
     board = Board(code_length=_code_length, num_of_colors=_number_of_colors)
 
     players = [
-        Player("Jae", board.copy()),
-        Player("Soo", board.copy()),
-        Player("Ben", board.copy()),
-        Player("Char", board.copy()),
+        Player("Jae", board.create_new_board()),
+        Player("Soo", board.create_new_board()),
+        Player("Ben", board.create_new_board()),
+        Player("Char", board.create_new_board()),
     ]
 
     game = Game(players, secret_code=_secret_code)
