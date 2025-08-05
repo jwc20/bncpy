@@ -39,4 +39,4 @@ class Player:
                     f"Digit {digit} is out of color range (0-{self._board.num_of_colors - 1})"
                 )
 
-        self._board.evaluate_guess(self._board.current_guess_index, guess_digits)
+        self._board.evaluate_guess(self._board.current_board_row_index, guess_digits)
