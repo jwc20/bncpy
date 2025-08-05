@@ -1,5 +1,4 @@
 from bnc import Board
-from collections import Counter
 
 
 class Player:
@@ -13,4 +12,4 @@ class Player:
 
     def make_guess(self, guess: str) -> None:
         guess_digits = list(map(int, guess))
-        self.board.evaluate_guess(guess_digits)
+        self._board.evaluate_guess(self._board.current_guess_index, guess_digits)
