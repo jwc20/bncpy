@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     # game = Game(players, secret_code=_secret_code)
     game = Game(players)
-    game.set_random_secret_code()
+    # game.set_random_secret_code()
 
     print(game.state)
     print(" ")
