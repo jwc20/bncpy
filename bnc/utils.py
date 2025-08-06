@@ -1,4 +1,27 @@
 import random
+import httpx
+
+
+def get_random_number(
+    number: int | None = 4,
+    minimum: int | None = 0,
+    maximum: int | None = 7,
+    column: int | None = 1,
+    base: int | None = 10,
+    format: str | None = "plain",
+) -> int:
+    params = {
+        "num": number,
+        "min": minimum,
+        "max": maximum,
+        "col": column,
+        "base": base,
+        "format": format,
+        "rnd": "new",
+    }
+    response = httpx.get("https://www.random.org/integers/", params=params)
+    cleaned_response = response.text.replace("\n", "")
+    return int(cleaned_response)
 
 
 def generate_guess(code_length: int, number_of_colors: int) -> str:
@@ -16,7 +39,7 @@ def validate_code_input(code: str, expected_length: int, max_color: int) -> list
     if not code.isdigit():
         raise ValueError("Code must contain only digits")
 
-    digits = list(map(int, code))
+    digits: list[int] = list(map(int, code))
     for digit in digits:
         if not check_color(digit, max_color):
             raise ValueError(

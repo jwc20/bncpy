@@ -1,13 +1,16 @@
 import logging
 
 from bnc import Board, Game, Player
-from bnc.utils import display_board, generate_guess
+from bnc.utils import display_board, generate_guess, get_random_number
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 if __name__ == "__main__":
     _code_length = 4
     _number_of_colors = 6
+
+    print(get_random_number())
+
     _secret_code = "1234"
 
     board = Board(code_length=_code_length, num_of_colors=_number_of_colors)
