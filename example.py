@@ -1,4 +1,4 @@
-import asyncio
+# import asyncio
 import logging
 
 from bnc import Board, Game, Player
@@ -21,10 +21,10 @@ if __name__ == "__main__":
         Player("Char", board.create_new_board()),
     ]
 
-    _secret_code = asyncio.run(
-        get_random_number(number=_code_length, maximum=_number_of_colors - 1)
-    )
-    print(_secret_code)
+    # _secret_code = asyncio.run(
+    #     get_random_number(number=_code_length, maximum=_number_of_colors - 1)
+    # )
+    # print(_secret_code)
     # game = Game(players, secret_code=_secret_code)
     game = Game(players)
     # game.set_random_secret_code()

@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from collections import deque
 from enum import Enum
@@ -7,6 +6,8 @@ from .player import Player
 from .utils import get_random_number
 
 logger = logging.getLogger(__name__)
+
+# import asyncio
 
 
 class GameState(Enum):
@@ -49,9 +50,10 @@ class Game:
                 )
 
     def set_random_secret_code(self) -> str:
-        new_secret_code = asyncio.run(
-            get_random_number(self._code_length, self._num_of_colors - 1)
-        )
+        # new_secret_code = asyncio.run(
+        #     get_random_number(self._code_length, self._num_of_colors - 1)
+        # )
+        new_secret_code = get_random_number(self._code_length, self._num_of_colors - 1)
         return new_secret_code
 
     def set_secret_code_for_all_players(self, secret_code: str | None) -> None:
