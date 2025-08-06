@@ -25,6 +25,9 @@ def get_random_number(
         "rnd": "new",
     }
 
+    # async with httpx.AsyncClient() as client:
+    #     response = await client.get("https://www.random.org/integers/", params=params)
+
     response = httpx.get("https://www.random.org/integers/", params=params)
     cleaned_response = response.text.replace("\n", "")
 
