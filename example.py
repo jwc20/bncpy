@@ -8,9 +8,6 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 if __name__ == "__main__":
     _code_length = 4
     _number_of_colors = 6
-
-    print(get_random_number())
-
     _secret_code = "1234"
 
     board = Board(code_length=_code_length, num_of_colors=_number_of_colors)
@@ -22,7 +19,10 @@ if __name__ == "__main__":
         Player("Char", board.create_new_board()),
     ]
 
-    game = Game(players, secret_code=_secret_code)
+    # game = Game(players, secret_code=_secret_code)
+    game = Game(players)
+    game.set_random_secret_code()
+
     print(game.state)
     print(" ")
 

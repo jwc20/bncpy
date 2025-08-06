@@ -1,6 +1,7 @@
 import logging
 from collections import deque
 from enum import Enum
+from .utils import get_random_number
 
 from .player import Player
 
@@ -29,7 +30,19 @@ class Game:
         self._has_started = False
         self.set_secret_code_for_all_players(secret_code)
 
+    def set_random_secret_code(self) -> str:
+        _code_length = self._players[0].board.code_length
+        _number_of_colors = self._players[0].board.num_of_colors - 1
+        new_secret_code = get_random_number(_code_length, _number_of_colors)
+        return new_secret_code
+
     def set_secret_code_for_all_players(self, secret_code: str | None) -> None:
+        if secret_code is None:
+            logger.info("Generating a random secreet code")
+            random_secret_code = self.set_random_secret_code()
+            logger.info("Generated secret code: %s", random_secret_code)
+            secret_code = random_secret_code
+
         for player in self._players:
             player.set_secret_code_to_board(secret_code)
 
