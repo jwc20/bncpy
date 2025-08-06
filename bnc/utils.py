@@ -4,24 +4,36 @@ import httpx
 
 def get_random_number(
     number: int | None = 4,
-    minimum: int | None = 0,
     maximum: int | None = 7,
-    column: int | None = 1,
     base: int | None = 10,
-    format: str | None = "plain",
-) -> int:
+) -> str:
+    # response type should be a string since converting to int removes leading zeros (EX: 0000 -> 0)
+
+    if maximum <= 0:
+        raise ValueError("Maximum value must be greater than minimum")
+
+    if base not in [2, 8, 10, 16]:
+        raise ValueError("Base value must be 2, 8, 10, or 16")
+
     params = {
         "num": number,
-        "min": minimum,
+        "min": 0,
         "max": maximum,
-        "col": column,
+        "col": 1,
         "base": base,
-        "format": format,
+        "format": "plain",
         "rnd": "new",
     }
+
     response = httpx.get("https://www.random.org/integers/", params=params)
     cleaned_response = response.text.replace("\n", "")
-    return int(cleaned_response)
+
+    if len(cleaned_response) != number:
+        raise ValueError(
+            f"Random number generator returned a number with {len(cleaned_response)} digits, expected {number}"
+        )
+
+    return cleaned_response
 
 
 def generate_guess(code_length: int, number_of_colors: int) -> str:
