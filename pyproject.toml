@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bncpy"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
     {name = "Jae W. Choi"},
 ]
@@ -18,9 +18,9 @@ dependencies = [
 keywords = ["game", "bulls-and-cows", "bulls", "cows", "mastermind"]
 
 [project.urls]
-Homepage = "https://github.com/jwc20/bnc"
-Repository = "https://github.com/jwc20/bnc.git"
-Issues = "https://github.com/jwc20/bnc/issues"
+Homepage = "https://github.com/jwc20/bncpy"
+Repository = "https://github.com/jwc20/bncpy.git"
+Issues = "https://github.com/jwc20/bncpy/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -35,7 +35,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["bnc*"]
+include = ["bncpy*"]
 exclude = ["tests*"]
 
 [tool.ruff]
