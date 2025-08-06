@@ -12,7 +12,9 @@ description = "Benjamin and Charlotte game"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "httpx>=0.28.1",
+]
 keywords = ["game", "bulls-and-cows", "bulls", "cows", "mastermind"]
 
 [project.urls]
