@@ -1,8 +1,7 @@
-# import asyncio
 import logging
 
 from bnc import Board, Game, Player
-from bnc.utils import display_board, generate_guess, get_random_number
+from bnc.utils import generate_guess, get_random_number
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
@@ -10,7 +9,6 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 if __name__ == "__main__":
     _code_length = 4
     _number_of_colors = 6
-    # _secret_code = "1234"
 
     board = Board(code_length=_code_length, num_of_colors=_number_of_colors)
 
@@ -21,12 +19,15 @@ if __name__ == "__main__":
         Player("Char", board.create_new_board()),
     ]
 
-    # _secret_code = asyncio.run(
-    #     get_random_number(number=_code_length, maximum=_number_of_colors - 1)
-    # )
-    # print(_secret_code)
+    # _secret_code = "1234"
+    _secret_code = get_random_number(number=_code_length, maximum=_number_of_colors - 1)
+    print(f"secret code: {_secret_code}")
     # game = Game(players, secret_code=_secret_code)
+
+    # leave secret_code as None to generate a random secret code
     game = Game(players)
+
+    # generate new random secret code
     # game.set_random_secret_code()
 
     print(game.state)
@@ -49,28 +50,28 @@ if __name__ == "__main__":
     game.submit_guess(game.players[0], "1112")  # cannot guess since the game is over
 
     print(f"player: {game.players[0].name}")
-    display_board(game.players[0].board)
+    game.players[0].board.display_board()
     print(game.players[0].game_won)
     print(game.players[0].game_over)
     print("###############")
     print(" ")
 
     print(f"player: {game.players[1].name}")
-    display_board(game.players[1].board)
+    game.players[1].board.display_board()
     print(game.players[1].game_won)
     print(game.players[1].game_over)
     print("###############")
     print(" ")
 
     print(f"player: {game.players[2].name}")
-    display_board(game.players[2].board)
+    game.players[2].board.display_board()
     print("###############")
     print(game.players[2].game_won)
     print(game.players[2].game_over)
     print(" ")
 
     print(f"player: {game.players[3].name}")
-    display_board(game.players[3].board)
+    game.players[3].board.display_board()
     print(game.players[3].game_won)
     print(game.players[3].game_over)
     print("###############")

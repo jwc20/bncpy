@@ -7,8 +7,6 @@ from .utils import get_random_number
 
 logger = logging.getLogger(__name__)
 
-# import asyncio
-
 
 class GameState(Enum):
     SETUP = 0
@@ -27,19 +25,19 @@ class Game:
         if not players:
             raise ValueError("Players cannot be empty")
 
-        self._validate_board_consistency(players)
+        self._players = players
+        self._validate_board_consistency()
         self._code_length = players[0].board.code_length
         self._num_of_colors = players[0].board.num_of_colors
 
-        self._players = players
         self._winners = deque()
         self._state = GameState.SETUP
         self._has_started = False
         self.set_secret_code_for_all_players(secret_code)
 
-    def _validate_board_consistency(self, players: list[Player]) -> None:
-        first_board = players[0].board
-        for player in players[1:]:
+    def _validate_board_consistency(self) -> None:
+        first_board = self._players[0].board
+        for player in self._players[1:]:
             if (
                 player.board.code_length != first_board.code_length
                 or player.board.num_of_colors != first_board.num_of_colors
@@ -50,9 +48,6 @@ class Game:
                 )
 
     def set_random_secret_code(self) -> str:
-        # new_secret_code = asyncio.run(
-        #     get_random_number(self._code_length, self._num_of_colors - 1)
-        # )
         new_secret_code = get_random_number(self._code_length, self._num_of_colors - 1)
         return new_secret_code
 
@@ -60,7 +55,6 @@ class Game:
         if secret_code is None:
             logger.info("Generating a random secret code")
             random_secret_code = self.set_random_secret_code()
-            logger.info("Generated secret code: %s", random_secret_code)
             secret_code = random_secret_code
 
         for player in self._players:
