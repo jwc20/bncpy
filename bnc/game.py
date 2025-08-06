@@ -58,6 +58,12 @@ class Game:
             secret_code = random_secret_code
 
         for player in self._players:
+            if player.board.secret_code is not None:
+                logger.info(
+                    "Secret code for player %s is already set. Skipping setting.",
+                    player.name,
+                )
+                continue
             player.set_secret_code_to_board(secret_code)
 
     @property
