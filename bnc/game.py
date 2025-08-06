@@ -3,6 +3,7 @@ from collections import deque
 from enum import Enum
 
 from .player import Player
+from .utils import get_random_number
 
 logger = logging.getLogger(__name__)
 
@@ -23,14 +24,46 @@ class Game:
     ) -> None:
         if not players:
             raise ValueError("Players cannot be empty")
+
         self._players = players
+        self._validate_board_consistency()
+        self._code_length = players[0].board.code_length
+        self._num_of_colors = players[0].board.num_of_colors
+
         self._winners = deque()
         self._state = GameState.SETUP
         self._has_started = False
         self.set_secret_code_for_all_players(secret_code)
 
+    def _validate_board_consistency(self) -> None:
+        first_board = self._players[0].board
+        for player in self._players[1:]:
+            if (
+                player.board.code_length != first_board.code_length
+                or player.board.num_of_colors != first_board.num_of_colors
+            ):
+                raise ValueError(
+                    f"All players must have boards with same configuration. "
+                    f"Player '{player.name}' has different board settings."
+                )
+
+    def set_random_secret_code(self) -> str:
+        new_secret_code = get_random_number(self._code_length, self._num_of_colors - 1)
+        return new_secret_code
+
     def set_secret_code_for_all_players(self, secret_code: str | None) -> None:
+        if secret_code is None:
+            logger.info("Generating a random secret code")
+            random_secret_code = self.set_random_secret_code()
+            secret_code = random_secret_code
+
         for player in self._players:
+            if player.board.secret_code is not None:
+                logger.info(
+                    "Secret code for player %s is already set. Skipping setting.",
+                    player.name,
+                )
+                continue
             player.set_secret_code_to_board(secret_code)
 
     @property

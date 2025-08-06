@@ -1,12 +1,6 @@
 from collections import Counter
 from dataclasses import dataclass
 
-from .utils import (
-    check_board_row_index,
-    validate_code_input,
-    validate_secret_code,
-)
-
 
 @dataclass
 class BoardRow:
@@ -64,9 +58,7 @@ class Board:
 
     @secret_code.setter
     def secret_code(self, secret_code: str) -> None:
-        self._secret_digits = validate_secret_code(
-            secret_code, self._code_length, self._num_of_colors
-        )
+        self._secret_digits = self.validate_secret_code(secret_code)
         self._secret_code = secret_code
 
     @property
@@ -107,6 +99,45 @@ class Board:
             guess=guess_digits, bulls=bulls, cows=cows, is_filled=True
         )
 
+    def display_board(self) -> None:
+        print("-" * 40)
+        for i, row in enumerate(self._board):
+            if row.is_filled:
+                guess_str = "".join(map(str, row.guess))
+                print(
+                    f"Guess {i + 1}: {guess_str} | Bulls: {row.bulls} | Cows: {row.cows}"
+                )
+            else:
+                print(f"Guess {i + 1}: {'_' * self._code_length}")
+
+    def check_color(self, color: int) -> bool:
+        return 0 <= color < self._num_of_colors
+
+    def check_board_row_index(self, board_row_index: int) -> bool:
+        return 0 <= board_row_index < self._num_of_guesses
+
+    def validate_code_input(self, code: str) -> list[int]:
+        if len(code) != self._code_length:
+            raise ValueError(
+                f"Code must be exactly {self._code_length} digits long, got '{code}'"
+            )
+        if not code.isdigit():
+            raise ValueError("Code must contain only digits")
+
+        digits: list[int] = list(map(int, code))
+        for digit in digits:
+            if not self.check_color(digit):
+                raise ValueError(
+                    f"Digit {digit} is out of range, must be between 0 and {self._num_of_colors - 1}"
+                )
+        return digits
+
+    def validate_secret_code(self, secret_code: str) -> list[int]:
+        if secret_code is None:
+            raise ValueError("secret code cannot be None")
+        secret_digits = self.validate_code_input(secret_code)
+        return secret_digits
+
     def calculate_bulls_and_cows(self, guess_digits: list[int]) -> tuple[int, int]:
         if not self._secret_digits:
             raise ValueError(
@@ -130,10 +161,10 @@ class Board:
         return bulls_count, cows_count
 
     def evaluate_guess(self, board_row_index: int, guess: str) -> None:
-        if not check_board_row_index(board_row_index, self._num_of_guesses):
+        if not self.check_board_row_index(board_row_index):
             raise ValueError("Row index is out of range")
 
-        guess_digits = validate_code_input(guess, self.code_length, self.num_of_colors)
+        guess_digits = self.validate_code_input(guess)
         bulls_count, cows_count = self.calculate_bulls_and_cows(guess_digits)
         self.set_board_row(bulls_count, cows_count, guess_digits, board_row_index)
 
