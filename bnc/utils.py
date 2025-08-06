@@ -1,8 +1,9 @@
 import random
+
 import httpx
 
 
-def get_random_number(
+async def get_random_number(
     number: int | None = 4,
     maximum: int | None = 7,
     base: int | None = 10,
@@ -25,10 +26,10 @@ def get_random_number(
         "rnd": "new",
     }
 
-    # async with httpx.AsyncClient() as client:
-    #     response = await client.get("https://www.random.org/integers/", params=params)
+    async with httpx.AsyncClient() as client:
+        response = await client.get("https://www.random.org/integers/", params=params)
 
-    response = httpx.get("https://www.random.org/integers/", params=params)
+    # response = httpx.get("https://www.random.org/integers/", params=params)
     cleaned_response = response.text.replace("\n", "")
 
     if len(cleaned_response) != number:
