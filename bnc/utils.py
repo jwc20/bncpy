@@ -56,13 +56,13 @@ def generate_guess(code_length: int, number_of_colors: int) -> str:
 
 
 def get_random_number(
-    number: int | None = 4,
-    maximum: int | None = 7,
+    number: int = 4,
+    maximum: int = 7,
     base: int | None = 10,
 ) -> str:
     # response type should be a string since converting to int removes leading zeros (EX: 0000 -> 0)
 
-    if maximum and maximum <= 0:
+    if maximum <= 0:
         raise ValueError("Maximum value must be greater than minimum")
 
     if base not in [2, 8, 10, 16]:
@@ -71,7 +71,7 @@ def get_random_number(
     params = {
         "num": number,
         "min": 0,
-        "max": maximum,
+        "max": maximum - 1,
         "col": 1,
         "base": base,
         "format": "plain",
