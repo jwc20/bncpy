@@ -1,5 +1,5 @@
-from collections import Counter
 from dataclasses import dataclass
+from .utils import calculate_bulls_and_cows
 
 
 @dataclass
@@ -138,34 +138,14 @@ class Board:
         secret_digits = self.validate_code_input(secret_code)
         return secret_digits
 
-    def calculate_bulls_and_cows(self, guess_digits: list[int]) -> tuple[int, int]:
-        if not self._secret_digits:
-            raise ValueError(
-                "Secret code must be set before calculating bulls and cows"
-            )
-
-        bulls_count = 0
-        for i in range(len(self._secret_digits)):
-            if self._secret_digits[i] == guess_digits[i]:
-                bulls_count += 1
-
-        secret_counter = Counter(self._secret_digits)
-        guess_counter = Counter(guess_digits)
-
-        total_matches = 0
-        for digit in guess_counter:
-            if digit in secret_counter:
-                total_matches += min(guess_counter[digit], secret_counter[digit])
-
-        cows_count = total_matches - bulls_count
-        return bulls_count, cows_count
-
     def evaluate_guess(self, board_row_index: int, guess: str) -> None:
         if not self.check_board_row_index(board_row_index):
             raise ValueError("Row index is out of range")
 
         guess_digits = self.validate_code_input(guess)
-        bulls_count, cows_count = self.calculate_bulls_and_cows(guess_digits)
+        bulls_count, cows_count = calculate_bulls_and_cows(
+            self._secret_digits, guess_digits
+        )
         self.set_board_row(bulls_count, cows_count, guess_digits, board_row_index)
 
         if self._board[board_row_index].is_winning_row:

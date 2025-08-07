@@ -2,6 +2,31 @@ import random
 
 import httpx
 
+from collections import Counter
+
+
+def calculate_bulls_and_cows(
+    secret_digits: list[int], guess_digits: list[int]
+) -> tuple[int, int]:
+    if not secret_digits:
+        raise ValueError("Secret code must be set before calculating bulls and cows")
+
+    bulls_count = 0
+    for i in range(len(secret_digits)):
+        if secret_digits[i] == guess_digits[i]:
+            bulls_count += 1
+
+    secret_counter = Counter(secret_digits)
+    guess_counter = Counter(guess_digits)
+
+    total_matches = 0
+    for digit in guess_counter:
+        if digit in secret_counter:
+            total_matches += min(guess_counter[digit], secret_counter[digit])
+
+    cows_count = total_matches - bulls_count
+    return bulls_count, cows_count
+
 
 def generate_guess(code_length: int, number_of_colors: int) -> str:
     code = ""
