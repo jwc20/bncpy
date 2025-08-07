@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .utils import calculate_bulls_and_cows
+from .utils import calculate_bulls_and_cows, validate_code_input
 
 
 @dataclass
@@ -111,39 +111,24 @@ class Board:
             else:
                 print(f"Guess {i + 1}: {'_' * self._code_length}")
 
-    def check_color(self, color: int) -> bool:
-        return 0 <= color < self._num_of_colors
+
 
     def check_board_row_index(self, board_row_index: int) -> bool:
         return 0 <= board_row_index < self._num_of_guesses
 
-    def validate_code_input(self, code: str) -> list[int]:
-        if len(code) != self._code_length:
-            raise ValueError(
-                f"Code must be exactly {self._code_length} digits long, got '{code}'"
-            )
-        if not code.isdigit():
-            raise ValueError("Code must contain only digits")
 
-        digits: list[int] = list(map(int, code))
-        for digit in digits:
-            if not self.check_color(digit):
-                raise ValueError(
-                    f"Digit {digit} is out of range, must be between 0 and {self._num_of_colors - 1}"
-                )
-        return digits
 
     def validate_secret_code(self, secret_code: str) -> list[int]:
         if secret_code is None:
             raise ValueError("secret code cannot be None")
-        secret_digits = self.validate_code_input(secret_code)
+        secret_digits = validate_code_input(secret_code, self._code_length, self._num_of_colors)
         return secret_digits
 
     def evaluate_guess(self, board_row_index: int, guess: str) -> None:
         if not self.check_board_row_index(board_row_index):
             raise ValueError("Row index is out of range")
 
-        guess_digits = self.validate_code_input(guess)
+        guess_digits = validate_code_input(guess, self._code_length, self._num_of_colors)
         bulls_count, cows_count = calculate_bulls_and_cows(
             self._secret_digits, guess_digits
         )
