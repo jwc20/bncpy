@@ -26,24 +26,26 @@ def calculate_bulls_and_cows(
     cows_count = total_matches - bulls_count
     return bulls_count, cows_count
 
+
 def check_color(color: int, num_of_colors: int) -> bool:
-        return 0 <= color < num_of_colors
+    return 0 <= color < num_of_colors
+
 
 def validate_code_input(code: str, code_length: int, num_of_colors: int) -> list[int]:
-        if len(code) != code_length:
-            raise ValueError(
-                f"Code must be exactly {code_length} digits long, got '{code}'"
-            )
-        if not code.isdigit():
-            raise ValueError("Code must contain only digits")
+    if len(code) != code_length:
+        raise ValueError(
+            f"Code must be exactly {code_length} digits long, got '{code}'"
+        )
+    if not code.isdigit():
+        raise ValueError("Code must contain only digits")
 
-        digits: list[int] = list(map(int, code))
-        for digit in digits:
-            if not check_color(digit, num_of_colors):
-                raise ValueError(
-                    f"Digit {digit} is out of range, must be between 0 and {num_of_colors - 1}"
-                )
-        return digits
+    digits: list[int] = list(map(int, code))
+    for digit in digits:
+        if not check_color(digit, num_of_colors):
+            raise ValueError(
+                f"Digit {digit} is out of range, must be between 0 and {num_of_colors - 1}"
+            )
+    return digits
 
 
 def generate_guess(code_length: int, number_of_colors: int) -> str:

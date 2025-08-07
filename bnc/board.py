@@ -111,24 +111,24 @@ class Board:
             else:
                 print(f"Guess {i + 1}: {'_' * self._code_length}")
 
-
-
     def check_board_row_index(self, board_row_index: int) -> bool:
         return 0 <= board_row_index < self._num_of_guesses
-
-
 
     def validate_secret_code(self, secret_code: str) -> list[int]:
         if secret_code is None:
             raise ValueError("secret code cannot be None")
-        secret_digits = validate_code_input(secret_code, self._code_length, self._num_of_colors)
+        secret_digits = validate_code_input(
+            secret_code, self._code_length, self._num_of_colors
+        )
         return secret_digits
 
     def evaluate_guess(self, board_row_index: int, guess: str) -> None:
         if not self.check_board_row_index(board_row_index):
             raise ValueError("Row index is out of range")
 
-        guess_digits = validate_code_input(guess, self._code_length, self._num_of_colors)
+        guess_digits = validate_code_input(
+            guess, self._code_length, self._num_of_colors
+        )
         bulls_count, cows_count = calculate_bulls_and_cows(
             self._secret_digits, guess_digits
         )
