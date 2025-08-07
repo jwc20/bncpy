@@ -1,8 +1,7 @@
 import random
+from collections import Counter
 
 import httpx
-
-from collections import Counter
 
 
 def calculate_bulls_and_cows(
