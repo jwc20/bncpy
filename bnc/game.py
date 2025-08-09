@@ -8,7 +8,7 @@ from .utils import get_random_number
 logger = logging.getLogger(__name__)
 
 
-class GameState(Enum):
+class CurrentGameStatus(Enum):
     SETUP = 0
     IN_PROGRESS = 1
     FINISHED = 2
@@ -31,7 +31,7 @@ class Game:
         self._num_of_colors = players[0].board.num_of_colors
 
         self._winners = deque()
-        self._state = GameState.SETUP
+        self._state = CurrentGameStatus.SETUP
         self._has_started = False
         self.set_secret_code_for_all_players(secret_code)
 
@@ -67,12 +67,12 @@ class Game:
             player.set_secret_code_to_board(secret_code)
 
     @property
-    def state(self) -> GameState:
+    def state(self) -> CurrentGameStatus:
         if not self._has_started:
-            return GameState.SETUP
+            return CurrentGameStatus.SETUP
         if all(player.game_over for player in self._players):
-            return GameState.FINISHED
-        return GameState.IN_PROGRESS
+            return CurrentGameStatus.FINISHED
+        return CurrentGameStatus.IN_PROGRESS
 
     @property
     def players(self) -> list[Player]:

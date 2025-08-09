@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from bnc.board import Board
-from bnc.game import Game, GameState
+from bnc.game import Game, CurrentGameStatus
 from bnc.player import Player
 
 
@@ -32,11 +32,11 @@ class TestIntegration:
         game = Game([player1, player2], secret_code="1234")
 
         # Initial state
-        assert game.state == GameState.SETUP
+        assert game.state == CurrentGameStatus.SETUP
 
         # Player 1 makes wrong guess
         game.submit_guess(player1, "5678")
-        assert game.state == GameState.IN_PROGRESS
+        assert game.state == CurrentGameStatus.IN_PROGRESS
         assert player1.game_won is False
 
         # Player 2 makes correct guess
@@ -46,7 +46,7 @@ class TestIntegration:
         assert len(game.winners) == 1
 
         # Game continues for other player
-        assert game.state == GameState.IN_PROGRESS
+        assert game.state == CurrentGameStatus.IN_PROGRESS
 
     @patch("bnc.board.validate_secret_code")
     @patch("bnc.board.validate_code_input")
@@ -70,5 +70,5 @@ class TestIntegration:
 
         assert player.game_won is False
         assert player.game_over is True
-        assert game.state == GameState.FINISHED
+        assert game.state == CurrentGameStatus.FINISHED
         assert game.winner is None

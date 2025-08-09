@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from bnc.game import Game, GameState
+from bnc.game import Game, CurrentGameStatus
 from bnc.player import Player
 
 
@@ -15,7 +15,7 @@ class TestGame:
         game = Game([player])
 
         assert game.players == [player]
-        assert game.state == GameState.SETUP
+        assert game.state == CurrentGameStatus.SETUP
         assert game.winner is None
         assert len(game.winners) == 0
         player.set_secret_code_to_board.assert_called_once_with(None)
@@ -55,15 +55,15 @@ class TestGame:
         game = Game([player])
 
         # Initial state
-        assert game.state == GameState.SETUP
+        assert game.state == CurrentGameStatus.SETUP
 
         # After first guess
         game.submit_guess(player, "1234")
-        assert game.state == GameState.IN_PROGRESS
+        assert game.state == CurrentGameStatus.IN_PROGRESS
 
         # After game over
         player.game_over = True
-        assert game.state == GameState.FINISHED
+        assert game.state == CurrentGameStatus.FINISHED
 
     def test_submit_guess_normal_flow(self):
         """Test submit_guess in normal flow."""
