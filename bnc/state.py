@@ -1,9 +1,9 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
-from enum import Enum
-import json
-from datetime import datetime, timezone
 
+import json
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from enum import Enum
 
 from bnc import Board, Game, Player
 from bnc.utils import get_random_number
@@ -22,22 +22,6 @@ class PlayerGuess:
     player: str
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
-    @classmethod
-    def from_dict(cls, data: dict):
-        timestamp = data.get("timestamp")
-        if timestamp and isinstance(timestamp, str):
-            timestamp = datetime.fromisoformat(timestamp)
-        elif not timestamp:
-            timestamp = datetime.now(timezone.utc)  # Changed here
-
-        return cls(
-            guess=data["guess"],
-            bulls=data["bulls"],
-            cows=data["cows"],
-            player=data["player"],
-            timestamp=timestamp,
-        )
-
     def to_dict(self):
         return {
             "guess": self.guess,
@@ -46,6 +30,22 @@ class PlayerGuess:
             "player": self.player,
             "timestamp": self.timestamp.isoformat(),
         }
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        timestamp = data.get("timestamp")
+        if timestamp and isinstance(timestamp, str):
+            timestamp = datetime.fromisoformat(timestamp)
+        elif not timestamp:
+            timestamp = datetime.now(timezone.utc)
+
+        return cls(
+            guess=data["guess"],
+            bulls=data["bulls"],
+            cows=data["cows"],
+            player=data["player"],
+            timestamp=timestamp,
+        )
 
 
 @dataclass
@@ -137,6 +137,8 @@ class GameState:
                 g.bulls == self.config.code_length for g in self.all_guesses
             )
         else:
+            if not self.player_states:
+                return False
             return all(ps.game_over for ps in self.player_states.values())
 
     @property
@@ -298,11 +300,55 @@ class GameState:
             game_started=True,
         )
 
+    def submit_guess(self, player_name: str, guess: str) -> dict:
+        if self.game_over:
+            return {"error": "Game is already over"}
+
+        if not self.game_started:
+            self.game_started = True
+
+        game = self.to_game()
+
+        if self.mode == GameMode.SINGLE_BOARD:
+            player = game.players[0]
+        else:
+            player = None
+            for p in game.players:
+                if p.name == player_name:
+                    player = p
+                    break
+
+            if not player:
+                board = self._create_board()
+                player = Player(name=player_name, board=board)
+                game.players.append(player)
+                self.add_player(player_name)
+
+        try:
+            prev_guess_count = len(self.all_guesses)
+            game.submit_guess(player, guess)
+
+            new_state = GameState.from_game(game, self.config, self.mode, self)
+
+            if self.mode == GameMode.SINGLE_BOARD and prev_guess_count < len(
+                new_state.all_guesses
+            ):
+                new_state.all_guesses[-1].player = player_name
+
+            self.all_guesses = new_state.all_guesses
+            self.player_states = new_state.player_states
+            self.winners = new_state.winners
+
+            return self.to_dict()
+
+        except ValueError as e:
+            return {"error": str(e)}
+
     def to_json(self) -> str:
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str, config: GameConfig) -> "GameState":
+    def from_json(cls, json_str: str, config: GameConfig) -> GameState:
         data = json.loads(json_str)
         return cls.from_dict(data, config)
 
@@ -328,7 +374,7 @@ class GameState:
         return base_dict
 
     @classmethod
-    def from_dict(cls, data: dict, config: GameConfig) -> "GameState":
+    def from_dict(cls, data: dict, config: GameConfig) -> GameState:
         mode = GameMode(data.get("mode", "SINGLE_BOARD"))
         players = data.get("players", [])
         all_guesses = [PlayerGuess.from_dict(g) for g in data.get("guesses", [])]
@@ -348,58 +394,4 @@ class GameState:
             all_guesses=all_guesses,
             winners=winners,
             game_started=game_started,
-        )
-
-
-if __name__ == "__main__":
-    config = GameConfig(code_length=4, num_of_colors=6, num_of_guesses=10)
-
-    print("\n=== Single Player Mode ===")
-    state_single = GameState(
-        config=config,
-        mode=GameMode.SINGLE_BOARD,
-        players=["Jae", "Soo", "Benjamin", "Charlotte"],
-    )
-
-    game = state_single.to_game()
-    game.submit_guess(game.players[0], "1234")
-
-    state_single = GameState.from_game(
-        game, config, GameMode.SINGLE_BOARD, state_single
-    )
-
-    game = state_single.to_game()
-    game.submit_guess(game.players[0], "2345")
-    state_single = GameState.from_game(
-        game, config, GameMode.SINGLE_BOARD, state_single
-    )
-    state_single.all_guesses[-1].player = "Soo"
-
-    json_data = state_single.to_json()
-    print(f"JSON for database: {json_data[:100]}...")
-
-    loaded_state = GameState.from_json(json_data, config)
-    print(f"Game over: {loaded_state.game_over}")
-    print(f"Current row: {loaded_state.current_row}")
-    print(f"Guesses: {[(g.guess, g.player) for g in loaded_state.all_guesses]}")
-
-    print("\n=== Multi Player Mode ===")
-    state_multi = GameState(
-        config=config,
-        mode=GameMode.MULTI_BOARD,
-    )
-
-    for player_name in ["Jae", "Soo", "Benjamin", "Charlotte"]:
-        state_multi.add_player(player_name)
-
-    game = state_multi.to_game()
-    jae_player = next((p for p in game.players if p.name == "Jae"), None)
-    if jae_player:
-        game.submit_guess(jae_player, "1234")
-
-    state_multi = GameState.from_game(game, config, GameMode.MULTI_BOARD, state_multi)
-
-    for name, player_state in state_multi.player_states.items():
-        print(
-            f"{name}: {player_state.current_row} guesses, game_over: {player_state.game_over}"
         )
