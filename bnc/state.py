@@ -5,8 +5,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 
-from bnc import Board, Game, Player
-from bnc.utils import get_random_number
+from . import Board, Game, Player
+from .utils import get_random_number
 
 
 class GameMode(Enum):
