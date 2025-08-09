@@ -82,14 +82,26 @@ class GameState:
         self._player_states = player_states or {}
         self._all_guesses = all_guesses or []
         self._winners = winners or []
+        
+        if not self._config.secret_code:
+            self._config.secret_code = self._config.generate_secret_code()
 
     @property
     def game_over(self):
-        pass
+        if self.mode == GameMode.SINGLE:
+            # single mode
+            return (len(self.all_guesses) >= self.config.num_of_guesses or 
+                    any(g.bulls == self.config.code_length for g in self.all_guesses))
+        else:
+            # multi mode, game is over when all players are done
+            return all(ps.game_over for ps in self.player_states.values())
 
     @property
     def game_won(self):
-        pass
+        if self.mode == GameMode.SINGLE:
+            return any(g.bulls == self.config.code_length for g in self.all_guesses)
+        else:
+            return any(ps.game_won for ps in self.player_states.values())
 
     @property
     def current_row(self):
