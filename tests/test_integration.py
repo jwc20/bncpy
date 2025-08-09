@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from bnc.board import Board
-from bnc.game import Game, CurrentGameStatus
+from bnc.game import CurrentGameStatus, Game
 from bnc.player import Player
 
 

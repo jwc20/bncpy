@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from bnc.game import Game, CurrentGameStatus
+from bnc.game import CurrentGameStatus, Game
 from bnc.player import Player
 
 

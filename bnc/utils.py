@@ -1,8 +1,8 @@
 import random
 from collections import Counter
+from encodings.punycode import digits
 
 import httpx
-from encodings.punycode import digits
 
 
 class CodeInputStrategyValidator:
