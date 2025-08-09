@@ -64,18 +64,38 @@ class GameConfig:
 
 
 class GameState:
-    game_config_strategy = GameConfigStrategyValidator()
-
     def __init__(
         self,
-        game_config: GameConfig,
+        config: GameConfig,
         mode: GameMode = GameMode.SINGLE_BOARD,
-        players: list[Player] = [],
+        players: list[str] | None = None,
+        player_states: dict[str, PlayerState] | None = None,
+        all_guesses: list[PlayerGuess] | None = None,
+        winners: list[str] | None = None
     ) -> None:
-        self.game_config_strategy.validate(game_config)
-        self._game_config = game_config
+        self._config = config
+        self._config.validate()
         self._mode = mode
-        self._players = players
+        self._players = players or []
+        self._player_states = player_states or {}
+        self._all_guesses = all_guesses or []
+        self._winners = winners or []
+        
+    @property 
+    def game_over(self):
+        pass
+    
+    @property 
+    def game_won(self):
+        pass
+    
+    @property 
+    def current_row(self):
+        pass
+    
+    @property 
+    def remaining_guesses(self):
+        pass
 
 
 if __name__ == "__main__":
