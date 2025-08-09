@@ -5,6 +5,7 @@ from encodings.punycode import digits
 import httpx
 
 
+# TODO: implement this
 class CodeInputStrategyValidator:
     @staticmethod
     def validate(self, code: str, code_length: int, num_of_colors: int) -> list[int]:
@@ -106,7 +107,7 @@ def get_random_number(
 
     params = {
         "num": number,
-        "min": 0,
+        "min": 1,
         "max": maximum - 1,
         "col": 1,
         "base": base,
