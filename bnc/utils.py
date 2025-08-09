@@ -1,7 +1,61 @@
 import random
 from collections import Counter
+from encodings.punycode import digits
 
 import httpx
+
+
+class CodeInputStrategyValidator:
+    @staticmethod
+    def validate(self, code: str, code_length: int, num_of_colors: int) -> list[int]:
+        self._check_code_length(code, code_length)
+        self._check_code_digits(code)
+        digits = list(map(int, code))
+        for digit in digits:
+            self._check_color(digit, num_of_colors)
+        return digits
+    
+    def _check_code_length(self, code: str, code_length: int) -> None:
+        if len(code) != code_length:
+            raise ValueError(
+                f"Code must be exactly {code_length} digits long, got '{code}'"
+            )
+    def _check_code_digits(self, code: str) -> None:
+        if not code.isdigit():
+            raise ValueError("Code must contain only digits")
+        
+        
+    def _check_color(self, color: int, num_of_colors: int) -> bool:
+        return 0 <= color < num_of_colors
+
+
+
+
+# TODO: deprecate
+def check_color(color: int, num_of_colors: int) -> bool:
+    return 0 <= color < num_of_colors
+
+# TODO: deprecate
+def validate_code_input(code: str, code_length: int, num_of_colors: int) -> list[int]:
+    if len(code) != code_length:
+        raise ValueError(
+            f"Code must be exactly {code_length} digits long, got '{code}'"
+        )
+    if not code.isdigit():
+        raise ValueError("Code must contain only digits")
+
+    digits: list[int] = list(map(int, code))
+    for digit in digits:
+        if not check_color(digit, num_of_colors):
+            raise ValueError(
+                f"Digit {digit} is out of range, must be between 0 and {num_of_colors - 1}"
+            )
+    return digits
+
+
+
+
+
 
 
 def calculate_bulls_and_cows(
@@ -27,25 +81,7 @@ def calculate_bulls_and_cows(
     return bulls_count, cows_count
 
 
-def check_color(color: int, num_of_colors: int) -> bool:
-    return 0 <= color < num_of_colors
 
-
-def validate_code_input(code: str, code_length: int, num_of_colors: int) -> list[int]:
-    if len(code) != code_length:
-        raise ValueError(
-            f"Code must be exactly {code_length} digits long, got '{code}'"
-        )
-    if not code.isdigit():
-        raise ValueError("Code must contain only digits")
-
-    digits: list[int] = list(map(int, code))
-    for digit in digits:
-        if not check_color(digit, num_of_colors):
-            raise ValueError(
-                f"Digit {digit} is out of range, must be between 0 and {num_of_colors - 1}"
-            )
-    return digits
 
 
 def generate_guess(code_length: int, number_of_colors: int) -> str:
