@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json
+import jsonpickle
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
@@ -105,6 +105,32 @@ class GameConfig:
         return get_random_number(
             number=self.code_length, maximum=self.num_of_colors - 1
         )
+
+    def to_dict(self) -> dict:
+        return {
+            "code_length": self.code_length,
+            "num_of_colors": self.num_of_colors,
+            "num_of_guesses": self.num_of_guesses,
+            "secret_code": self.secret_code,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> GameConfig:
+        return cls(
+            code_length=data.get("code_length", 4),
+            num_of_colors=data.get("num_of_colors", 6),
+            num_of_guesses=data.get("num_of_guesses", 10),
+            secret_code=data.get("secret_code"),
+        )
+
+    def to_json(self) -> str:
+        return jsonpickle.dumps(self.to_dict())
+
+    @classmethod
+    def from_json(cls, json_str: str) -> GameConfig:
+        data = jsonpickle.loads(json_str)
+        print(data)
+        return cls.from_dict(data)
 
 
 class GameState:
@@ -345,15 +371,16 @@ class GameState:
             return {"error": str(e)}
 
     def to_json(self) -> str:
-        return json.dumps(self.to_dict())
+        return jsonpickle.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str, config: GameConfig) -> GameState:
-        data = json.loads(json_str)
+    def from_json(cls, json_str: str, config: GameConfig | None = None) -> GameState:
+        data = jsonpickle.loads(json_str)
         return cls.from_dict(data, config)
 
     def to_dict(self):
         base_dict = {
+            "config": self.config.to_dict(),  # Add config serialization
             "mode": self.mode.value,
             "players": self.players,
             "guesses": [g.to_dict() for g in self.all_guesses],
@@ -374,7 +401,14 @@ class GameState:
         return base_dict
 
     @classmethod
-    def from_dict(cls, data: dict, config: GameConfig) -> GameState:
+    def from_dict(cls, data: dict, config: GameConfig | None = None) -> GameState:
+        # If config is in the data, use it; otherwise use the provided config
+        if "config" in data:
+            config = GameConfig.from_dict(data["config"])
+        elif config is None:
+            # If no config provided and not in data, use defaults
+            config = GameConfig()
+
         mode = GameMode(data.get("mode", "SINGLE_BOARD"))
         players = data.get("players", [])
         all_guesses = [PlayerGuess.from_dict(g) for g in data.get("guesses", [])]
