@@ -34,13 +34,15 @@ class Board:
         self._code_length = code_length
         self._num_of_colors = num_of_colors
         self._num_of_guesses = num_of_guesses
-        self._board: list[BoardRow] = self._init_board()
         self._secret_digits: list[int] = []
+        self._board: list[BoardRow] = self._init_board()
         self._game_won = False
         self._game_over = False
 
     def _init_board(self):
         board = []
+        if self._secret_code:
+            self._secret_digits = self.validate_secret_code(self._secret_code)
         for _ in range(self._num_of_guesses):
             board.append(BoardRow([0] * self._code_length))
         return board
