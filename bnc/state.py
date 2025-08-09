@@ -14,10 +14,15 @@ from aifc import data
 
 
 class GameMode(Enum):
+    """
+    SINGLE_BOARD: all players play on the same board
+    MULTI_BOARD: each player has their own board
+    """
+
     SINGLE_BOARD = 1
     MULTI_BOARD = 2
-    
-    
+
+
 @dataclass
 class PlayerGuess:
     guess: str
@@ -25,7 +30,7 @@ class PlayerGuess:
     cows: int
     player: str
     timestamp: datetime = field(default_factory=datetime.utcnow)
-    
+
 
 @dataclass
 class PlayerState:
@@ -35,7 +40,6 @@ class PlayerState:
     game_over: bool = False
     game_won: bool = False
     remaining_guesses: int = 10
-
 
 
 @dataclass
@@ -61,8 +65,6 @@ class GameConfig:
         return get_random_number(self.num_of_colors, self.code_length)
 
 
-
-
 class GameState:
     def __init__(
         self,
@@ -71,7 +73,7 @@ class GameState:
         players: list[str] | None = None,
         player_states: dict[str, PlayerState] | None = None,
         all_guesses: list[PlayerGuess] | None = None,
-        winners: list[str] | None = None
+        winners: list[str] | None = None,
     ) -> None:
         self._config = config
         self._config.validate()
@@ -80,21 +82,30 @@ class GameState:
         self._player_states = player_states or {}
         self._all_guesses = all_guesses or []
         self._winners = winners or []
-        
-    @property 
+
+    @property
     def game_over(self):
         pass
-    
-    @property 
+
+    @property
     def game_won(self):
         pass
-    
-    @property 
+
+    @property
     def current_row(self):
         pass
-    
-    @property 
+
+    @property
     def remaining_guesses(self):
+        pass
+
+    def add_player(self, player_name: str) -> None:
+        pass
+
+    def remove_player(self, player_name: str) -> None:
+        pass
+
+    def reset(self) -> None:
         pass
 
 
