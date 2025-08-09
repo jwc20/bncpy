@@ -1,8 +1,8 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
-import jsonpickle
-from datetime import datetime
-from typing import Optional
+import json
+from datetime import datetime, timezone
 
 
 from bnc import Board, Game, Player
@@ -10,11 +10,6 @@ from bnc.utils import get_random_number
 
 
 class GameMode(Enum):
-    """
-    SINGLE_BOARD: all players play on the same board
-    MULTI_BOARD: each player has their own board
-    """
-
     SINGLE_BOARD = "SINGLE_BOARD"
     MULTI_BOARD = "MULTI_BOARD"
 
@@ -25,17 +20,32 @@ class PlayerGuess:
     bulls: int
     cows: int
     player: str
-    timestamp: str
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     @classmethod
     def from_dict(cls, data: dict):
+        timestamp = data.get("timestamp")
+        if timestamp and isinstance(timestamp, str):
+            timestamp = datetime.fromisoformat(timestamp)
+        elif not timestamp:
+            timestamp = datetime.now(timezone.utc)  # Changed here
+
         return cls(
             guess=data["guess"],
             bulls=data["bulls"],
             cows=data["cows"],
             player=data["player"],
-            timestamp=data["timestamp"],
+            timestamp=timestamp,
         )
+
+    def to_dict(self):
+        return {
+            "guess": self.guess,
+            "bulls": self.bulls,
+            "cows": self.cows,
+            "player": self.player,
+            "timestamp": self.timestamp.isoformat(),
+        }
 
 
 @dataclass
@@ -46,6 +56,16 @@ class PlayerState:
     game_over: bool = False
     game_won: bool = False
     remaining_guesses: int = 10
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "guesses": [g.to_dict() for g in self.guesses],
+            "current_row": self.current_row,
+            "game_over": self.game_over,
+            "game_won": self.game_won,
+            "remaining_guesses": self.remaining_guesses,
+        }
 
     @classmethod
     def from_dict(cls, data: dict):
@@ -82,7 +102,9 @@ class GameConfig:
             raise ValueError(f"secret_code must be {self.code_length} digits long")
 
     def generate_secret_code(self) -> str:
-        return get_random_number(number=self.code_length, maximum=self.num_of_colors)
+        return get_random_number(
+            number=self.code_length, maximum=self.num_of_colors - 1
+        )
 
 
 class GameState:
@@ -94,54 +116,73 @@ class GameState:
         player_states: dict[str, PlayerState] | None = None,
         all_guesses: list[PlayerGuess] | None = None,
         winners: list[str] | None = None,
+        game_started: bool = False,
     ) -> None:
         self.config = config
         self.config.validate()
-        self._mode = mode
-        self._players = players or []
-        self._player_states = player_states or {}
-        self._all_guesses = all_guesses or []
-        self._winners = winners or []
+        self.mode = mode
+        self.players = players or []
+        self.player_states = player_states or {}
+        self.all_guesses = all_guesses or []
+        self.winners = winners or []
+        self.game_started = game_started
 
         if not self.config.secret_code:
             self.config.secret_code = self.config.generate_secret_code()
 
     @property
     def game_over(self):
-        if self._mode == GameMode.SINGLE_BOARD:
-            # single mode
-            return len(self._all_guesses) >= self.config.num_of_guesses or any(
-                g.bulls == self.config.code_length for g in self._all_guesses
+        if self.mode == GameMode.SINGLE_BOARD:
+            return len(self.all_guesses) >= self.config.num_of_guesses or any(
+                g.bulls == self.config.code_length for g in self.all_guesses
             )
         else:
-            # multi mode, game is over when all players are done
-            return all(ps.game_over for ps in self._player_states.values())
+            return all(ps.game_over for ps in self.player_states.values())
 
     @property
     def game_won(self):
-        if self._mode == GameMode.SINGLE_BOARD:
-            return any(g.bulls == self.config.code_length for g in self._all_guesses)
+        if self.mode == GameMode.SINGLE_BOARD:
+            return any(g.bulls == self.config.code_length for g in self.all_guesses)
         else:
-            return any(ps.game_won for ps in self._player_states.values())
+            return any(ps.game_won for ps in self.player_states.values())
 
     @property
     def current_row(self):
-        pass
+        return len(self.all_guesses)
 
     @property
     def remaining_guesses(self):
-        pass
+        return self.config.num_of_guesses - self.current_row
 
     def add_player(self, player_name: str) -> None:
-        pass
+        if player_name not in self.players:
+            self.players.append(player_name)
+
+            if (
+                self.mode == GameMode.MULTI_BOARD
+                and player_name not in self.player_states
+            ):
+                self.player_states[player_name] = PlayerState(
+                    name=player_name, remaining_guesses=self.config.num_of_guesses
+                )
 
     def remove_player(self, player_name: str) -> None:
-        pass
+        if player_name in self.players:
+            self.players.remove(player_name)
 
     def reset(self) -> None:
-        pass
+        self.config.secret_code = self.config.generate_secret_code()
+        self.all_guesses = []
+        self.player_states = {}
+        self.winners = []
+        self.game_started = False
 
-    # TODO: TEMPORARY, replace with prototype(?)
+        if self.mode == GameMode.MULTI_BOARD:
+            for player_name in self.players:
+                self.player_states[player_name] = PlayerState(
+                    name=player_name, remaining_guesses=self.config.num_of_guesses
+                )
+
     def _create_board(self) -> Board:
         return Board(
             code_length=self.config.code_length,
@@ -151,12 +192,10 @@ class GameState:
         )
 
     def to_game(self) -> Game:
-        if self._mode == GameMode.SINGLE_BOARD:
-            # Create a single shared board
+        if self.mode == GameMode.SINGLE_BOARD:
             board = self._create_board()
 
-            # Replay all guesses on the board
-            for guess_entry in self._all_guesses:
+            for guess_entry in self.all_guesses:
                 if board.current_board_row_index >= 0:
                     board.evaluate_guess(
                         board.current_board_row_index, guess_entry.guess
@@ -166,11 +205,25 @@ class GameState:
             return Game([player], secret_code=self.config.secret_code)
 
         else:
-            pass
+            players = []
 
-    @property
-    def all_guesses(self):
-        return self._all_guesses
+            for player_name, player_state in self.player_states.items():
+                board = self._create_board()
+
+                for guess_entry in player_state.guesses:
+                    if board.current_board_row_index >= 0:
+                        board.evaluate_guess(
+                            board.current_board_row_index, guess_entry.guess
+                        )
+
+                player = Player(name=player_name, board=board)
+                players.append(player)
+
+            if not players:
+                board = self._create_board()
+                players = [Player(name="Default", board=board)]
+
+            return Game(players, secret_code=self.config.secret_code)
 
     @classmethod
     def from_game(
@@ -178,21 +231,18 @@ class GameState:
         game: Game,
         config: GameConfig,
         mode: GameMode = GameMode.SINGLE_BOARD,
-        existing_state: Optional["GameState"] = None,
-        players: list[str] | None = None,
-    ) -> "GameState":
+        existing_state: GameState | None = None,
+    ) -> GameState:
         all_guesses = []
         player_states = {}
         winners = [winner.name for winner in game.winners]
 
         if mode == GameMode.SINGLE_BOARD:
-            # Extract guesses from the single shared board
             player = game.players[0]
             board = player.board
 
             for i, row in enumerate(board.board):
                 if row.is_filled:
-                    # Try to preserve player attribution from existing state
                     player_name = "Anonymous"
                     if existing_state and i < len(existing_state.all_guesses):
                         player_name = existing_state.all_guesses[i].player
@@ -203,9 +253,41 @@ class GameState:
                             bulls=row.bulls,
                             cows=row.cows,
                             player=player_name,
-                            timestamp=datetime.now().isoformat(),
                         )
                     )
+        else:
+            for player in game.players:
+                board = player.board
+                player_guesses = []
+
+                for row in board.board:
+                    if row.is_filled:
+                        guess_entry = PlayerGuess(
+                            guess="".join(map(str, row.guess)),
+                            bulls=row.bulls,
+                            cows=row.cows,
+                            player=player.name,
+                        )
+                        player_guesses.append(guess_entry)
+                        all_guesses.append(guess_entry)
+
+                player_states[player.name] = PlayerState(
+                    name=player.name,
+                    guesses=player_guesses,
+                    current_row=len(player_guesses),
+                    game_over=board.game_over,
+                    game_won=board.game_won,
+                    remaining_guesses=config.num_of_guesses - len(player_guesses),
+                )
+
+        players = existing_state.players if existing_state else []
+        if not players:
+            players = [
+                p.name
+                for p in game.players
+                if p.name != "Shared" and p.name != "Default"
+            ]
+
         return cls(
             config=config,
             mode=mode,
@@ -213,15 +295,37 @@ class GameState:
             player_states=player_states,
             all_guesses=all_guesses,
             winners=winners,
+            game_started=True,
         )
 
-    def to_json(self) -> dict:
-        return jsonpickle.dumps(self.to_dict())
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
 
     @classmethod
     def from_json(cls, json_str: str, config: GameConfig) -> "GameState":
-        data = jsonpickle.loads(json_str)
+        data = json.loads(json_str)
         return cls.from_dict(data, config)
+
+    def to_dict(self):
+        base_dict = {
+            "mode": self.mode.value,
+            "players": self.players,
+            "guesses": [g.to_dict() for g in self.all_guesses],
+            "game_over": self.game_over,
+            "game_won": self.game_won,
+            "winners": self.winners,
+            "game_started": self.game_started,
+            "current_row": self.current_row,
+            "remaining_guesses": self.remaining_guesses,
+            "secret_code": self.config.secret_code if self.game_over else None,
+        }
+
+        if self.mode == GameMode.MULTI_BOARD:
+            base_dict["players_data"] = {
+                name: state.to_dict() for name, state in self.player_states.items()
+            }
+
+        return base_dict
 
     @classmethod
     def from_dict(cls, data: dict, config: GameConfig) -> "GameState":
@@ -243,23 +347,13 @@ class GameState:
             player_states=player_states,
             all_guesses=all_guesses,
             winners=winners,
+            game_started=game_started,
         )
-
-    def to_dict(self):
-        return {
-            "mode": self._mode.name,
-            "players": self._players,
-            "player_states": self._player_states,
-            "all_guesses": self._all_guesses,
-            "winners": self._winners,
-        }
 
 
 if __name__ == "__main__":
-
-    # Board config
     config = GameConfig(code_length=4, num_of_colors=6, num_of_guesses=10)
-    # Example 2a: Single-player mode (collaborative)
+
     print("\n=== Single Player Mode ===")
     state_single = GameState(
         config=config,
@@ -267,38 +361,45 @@ if __name__ == "__main__":
         players=["Jae", "Soo", "Benjamin", "Charlotte"],
     )
 
-    # Convert to game for making moves
     game = state_single.to_game()
     game.submit_guess(game.players[0], "1234")
 
-    # Convert back to state (this is what you'd save to database)
     state_single = GameState.from_game(
         game, config, GameMode.SINGLE_BOARD, state_single
     )
 
-    # Add another guess with player attribution
     game = state_single.to_game()
     game.submit_guess(game.players[0], "2345")
     state_single = GameState.from_game(
         game, config, GameMode.SINGLE_BOARD, state_single
     )
-    # Manually update the player name for the last guess (in single mode)
     state_single.all_guesses[-1].player = "Soo"
 
-    # Save to database (JSON)
     json_data = state_single.to_json()
     print(f"JSON for database: {json_data[:100]}...")
 
-    # Load from database
     loaded_state = GameState.from_json(json_data, config)
     print(f"Game over: {loaded_state.game_over}")
     print(f"Current row: {loaded_state.current_row}")
     print(f"Guesses: {[(g.guess, g.player) for g in loaded_state.all_guesses]}")
 
-    #
-    # print("\n=== Multi Player Mode ===")
-    # state_multi = GameState(
-    #     config=config,
-    #     mode=GameMode.MULTI_BOARD,
-    #     players=["Jae", "Soo", "Benjamin", "Charlotte"],
-    # )
+    print("\n=== Multi Player Mode ===")
+    state_multi = GameState(
+        config=config,
+        mode=GameMode.MULTI_BOARD,
+    )
+
+    for player_name in ["Jae", "Soo", "Benjamin", "Charlotte"]:
+        state_multi.add_player(player_name)
+
+    game = state_multi.to_game()
+    jae_player = next((p for p in game.players if p.name == "Jae"), None)
+    if jae_player:
+        game.submit_guess(jae_player, "1234")
+
+    state_multi = GameState.from_game(game, config, GameMode.MULTI_BOARD, state_multi)
+
+    for name, player_state in state_multi.player_states.items():
+        print(
+            f"{name}: {player_state.current_row} guesses, game_over: {player_state.game_over}"
+        )
