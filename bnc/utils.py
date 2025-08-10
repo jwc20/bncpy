@@ -1,40 +1,16 @@
+import logging
 import random
 from collections import Counter
 
 import httpx
 
-
-# TODO: implement this
-class CodeInputStrategyValidator:
-    @staticmethod
-    def validate(self, code: str, code_length: int, num_of_colors: int) -> list[int]:
-        self._check_code_length(code, code_length)
-        self._check_code_digits(code)
-        digits = list(map(int, code))
-        for digit in digits:
-            self._check_color(digit, num_of_colors)
-        return digits
-
-    def _check_code_length(self, code: str, code_length: int) -> None:
-        if len(code) != code_length:
-            raise ValueError(
-                f"Code must be exactly {code_length} digits long, got '{code}'"
-            )
-
-    def _check_code_digits(self, code: str) -> None:
-        if not code.isdigit():
-            raise ValueError("Code must contain only digits")
-
-    def _check_color(self, color: int, num_of_colors: int) -> bool:
-        return 0 < color <= num_of_colors
+logger = logging.getLogger(__name__)
 
 
-# TODO: deprecate
 def check_color(color: int, num_of_colors: int) -> bool:
     return 0 < color <= num_of_colors
 
 
-# TODO: deprecate
 def validate_code_input(code: str, code_length: int, num_of_colors: int) -> list[int]:
     if len(code) != code_length:
         raise ValueError(
@@ -47,7 +23,7 @@ def validate_code_input(code: str, code_length: int, num_of_colors: int) -> list
     for digit in digits:
         if not check_color(digit, num_of_colors):
             raise ValueError(
-                f"Digit {digit} is out of range, must be between 0 and {num_of_colors - 1}"
+                f"Digit {digit} is out of range, must be between 1 and {num_of_colors}"
             )
     return digits
 
@@ -86,7 +62,7 @@ def get_random_number(
     number: int = 4,
     minimum: int | None = 1,
     maximum: int = 7,
-    base: int | None = 10,
+    base: int = 10,
 ) -> str:
     """generates random number from minimum to maximum inclusive"""
     # response type should be a string since converting to int removes leading zeros (EX: 0000 -> 0)
@@ -112,13 +88,25 @@ def get_random_number(
         "format": "plain",
         "rnd": "new",
     }
+    try:
+        response = httpx.get("https://www.random.org/integers/", params=params)
+        response.raise_for_status()
+        cleaned_response = response.text.replace("\n", "")
 
-    response = httpx.get("https://www.random.org/integers/", params=params)
-    cleaned_response = response.text.replace("\n", "")
+        if len(cleaned_response) != number:
+            raise ValueError(
+                "Random number generator returned a number with %s digits, expected %s",
+                len(cleaned_response),
+                number,
+            )
 
-    if len(cleaned_response) != number:
-        raise ValueError(
-            f"Random number generator returned a number with {len(cleaned_response)} digits, expected {number}"
+        return cleaned_response
+    except (httpx.RequestError, httpx.HTTPStatusError) as e:
+        logger.warning(
+            "Failed to get random number from API: %s, falling back to local generation",
+            e,
         )
-
-    return cleaned_response
+        # Fallback to local random generation
+        return "".join(
+            str(random.randint(minimum or 0, maximum - 1)) for _ in range(number)
+        )
