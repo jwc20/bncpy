@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import jsonpickle
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
+
+import jsonpickle
 
 from . import Board, Game, Player
 from .utils import get_random_number
@@ -137,12 +138,13 @@ class GameState:
     def __init__(
         self,
         config: GameConfig,
+        *,
         mode: GameMode = GameMode.SINGLE_BOARD,
         players: list[str] | None = None,
         player_states: dict[str, PlayerState] | None = None,
         all_guesses: list[PlayerGuess] | None = None,
         winners: list[str] | None = None,
-        game_started: bool = False,
+        game_started: bool | None = None,
     ) -> None:
         self.config = config
         self.config.validate()
@@ -151,7 +153,7 @@ class GameState:
         self.player_states = player_states or {}
         self.all_guesses = all_guesses or []
         self.winners = winners or []
-        self.game_started = game_started
+        self.game_started = False if game_started is None else game_started
 
         if not self.config.secret_code:
             self.config.secret_code = self.config.generate_secret_code()

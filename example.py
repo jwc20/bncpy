@@ -1,9 +1,6 @@
 import logging
 
-from bnc import Board, Game, Player
-from bnc.utils import generate_guess, get_random_number
 from bnc.state import GameConfig, GameMode, GameState
-
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
@@ -42,7 +39,7 @@ if __name__ == "__main__":
         f"Charlie guesses 1111: Bulls={result['guesses'][-1]['bulls']}, Cows={result['guesses'][-1]['cows']}"
     )
 
-    print(f"\nGame status:")
+    print("\nGame status:")
     print(f"  - Current row: {state.current_row}")
     print(f"  - Remaining guesses: {state.remaining_guesses}")
     print(f"  - Game over: {state.game_over}")
@@ -77,7 +74,7 @@ if __name__ == "__main__":
     state2.submit_guess("Player1", "2345")
     state2.submit_guess("Player2", "3456")
 
-    print(f"\nPlayer states:")
+    print("\nPlayer states:")
     for name, pstate in state2.player_states.items():
         print(
             f"  {name}: {pstate.current_row} guesses, remaining: {pstate.remaining_guesses}"

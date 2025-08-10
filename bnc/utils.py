@@ -1,6 +1,5 @@
 import random
 from collections import Counter
-from encodings.punycode import digits
 
 import httpx
 
@@ -15,26 +14,25 @@ class CodeInputStrategyValidator:
         for digit in digits:
             self._check_color(digit, num_of_colors)
         return digits
-    
+
     def _check_code_length(self, code: str, code_length: int) -> None:
         if len(code) != code_length:
             raise ValueError(
                 f"Code must be exactly {code_length} digits long, got '{code}'"
             )
+
     def _check_code_digits(self, code: str) -> None:
         if not code.isdigit():
             raise ValueError("Code must contain only digits")
-        
-        
+
     def _check_color(self, color: int, num_of_colors: int) -> bool:
         return 0 < color <= num_of_colors
-
-
 
 
 # TODO: deprecate
 def check_color(color: int, num_of_colors: int) -> bool:
     return 0 < color <= num_of_colors
+
 
 # TODO: deprecate
 def validate_code_input(code: str, code_length: int, num_of_colors: int) -> list[int]:
@@ -52,11 +50,6 @@ def validate_code_input(code: str, code_length: int, num_of_colors: int) -> list
                 f"Digit {digit} is out of range, must be between 0 and {num_of_colors - 1}"
             )
     return digits
-
-
-
-
-
 
 
 def calculate_bulls_and_cows(
@@ -82,9 +75,6 @@ def calculate_bulls_and_cows(
     return bulls_count, cows_count
 
 
-
-
-
 def generate_guess(code_length: int, number_of_colors: int) -> str:
     code = ""
     for _ in range(code_length):
@@ -103,7 +93,7 @@ def get_random_number(
 
     if minimum is None:
         minimum = 1
-    
+
     if minimum < 1 and minimum >= maximum:
         raise ValueError("Minimum should be greater than one and less than the maximum")
 
