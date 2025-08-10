@@ -103,9 +103,7 @@ class GameConfig:
             raise ValueError(f"secret_code must be {self.code_length} digits long")
 
     def generate_secret_code(self) -> str:
-        return get_random_number(
-            number=self.code_length, maximum=self.num_of_colors - 1
-        )
+        return get_random_number(length=self.code_length, max_value=self.num_of_colors)
 
     def to_dict(self) -> dict:
         return {
@@ -337,7 +335,12 @@ class GameState:
                 guess, self.config.code_length, self.config.num_of_colors
             )
             bulls, cows = calculate_bulls_and_cows(
-                validate_code_input(self.config.secret_code, self.config.code_length, self.config.num_of_colors), guess_digits # TODO: change to self.validate_secret_code() and/or optimize
+                validate_code_input(
+                    self.config.secret_code,
+                    self.config.code_length,
+                    self.config.num_of_colors,
+                ),
+                guess_digits,  # TODO: change to self.validate_secret_code() and/or optimize
             )
 
             guess_entry = PlayerGuess(

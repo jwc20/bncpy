@@ -48,7 +48,7 @@ class Game:
                 )
 
     def set_random_secret_code(self) -> str:
-        new_secret_code = get_random_number(self._code_length, self._num_of_colors - 1)
+        new_secret_code = get_random_number(self._code_length, self._num_of_colors)
         return new_secret_code
 
     def set_secret_code_for_all_players(self, secret_code: str | None) -> None:

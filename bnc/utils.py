@@ -54,59 +54,59 @@ def calculate_bulls_and_cows(
 def generate_guess(code_length: int, number_of_colors: int) -> str:
     code = ""
     for _ in range(code_length):
-        code += str(random.randint(0, number_of_colors - 1))
+        code += str(random.randint(1, number_of_colors))
     return code
 
 
 def get_random_number(
-    number: int = 4,
-    minimum: int | None = 1,
-    maximum: int = 7,
+    length: int = 4,
+    min_value: int = 1,
+    max_value: int = 7,
     base: int = 10,
 ) -> str:
-    """generates random number from minimum to maximum inclusive"""
-    # response type should be a string since converting to int removes leading zeros (EX: 0000 -> 0)
+    if length <= 0:
+        raise ValueError("Length must be a positive integer.")
 
-    if minimum is None:
-        minimum = 1
-
-    if minimum < 1 and minimum >= maximum:
-        raise ValueError("Minimum should be greater than one and less than the maximum")
-
-    if maximum <= 0:
-        raise ValueError("Maximum value must be greater than minimum")
+    if min_value >= max_value:
+        raise ValueError(
+            f"min_value ({min_value}) must be less than max_value ({max_value})."
+        )
 
     if base not in [2, 8, 10, 16]:
-        raise ValueError("Base value must be 2, 8, 10, or 16")
+        raise ValueError("Base value must be 2, 8, 10, or 16.")
 
+    if min_value < 0:
+        raise ValueError("min_value cannot be negative for this implementation.")
+
+    numbers: list[int]
     params = {
-        "num": number,
-        "min": minimum,
-        "max": maximum,
+        "num": length,
+        "min": min_value,
+        "max": max_value,
         "col": 1,
-        "base": base,
+        "base": 10,
         "format": "plain",
         "rnd": "new",
     }
+
     try:
-        response = httpx.get("https://www.random.org/integers/", params=params)
+        response = httpx.get(
+            "https://www.random.org/integers/", params=params, timeout=5.0
+        )
         response.raise_for_status()
-        cleaned_response = response.text.replace("\n", "")
-
-        if len(cleaned_response) != number:
+        numbers_str = response.text.strip().split()
+        if len(numbers_str) != length:
             raise ValueError(
-                "Random number generator returned a number with %s digits, expected %s",
-                len(cleaned_response),
-                number,
+                f"API returned {len(numbers_str)} numbers, expected {length}"
             )
+        numbers = [int(n) for n in numbers_str]
 
-        return cleaned_response
-    except (httpx.RequestError, httpx.HTTPStatusError) as e:
+    except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as e:
+        # fallback
         logger.warning(
             "Failed to get random number from API: %s, falling back to local generation",
             e,
         )
-        # Fallback to local random generation
-        return "".join(
-            str(random.randint(minimum or 0, maximum - 1)) for _ in range(number)
-        )
+        numbers = [random.randint(min_value, max_value) for _ in range(length)]
+
+    return "".join(map(str, numbers))
