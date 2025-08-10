@@ -1,5 +1,6 @@
-from collections import Counter
 from dataclasses import dataclass
+
+from .utils import calculate_bulls_and_cows, validate_code_input
 
 
 @dataclass
@@ -33,13 +34,15 @@ class Board:
         self._code_length = code_length
         self._num_of_colors = num_of_colors
         self._num_of_guesses = num_of_guesses
-        self._board: list[BoardRow] = self._init_board()
         self._secret_digits: list[int] = []
+        self._board: list[BoardRow] = self._init_board()
         self._game_won = False
         self._game_over = False
 
     def _init_board(self):
         board = []
+        if self._secret_code:
+            self._secret_digits = self.validate_secret_code(self._secret_code)
         for _ in range(self._num_of_guesses):
             board.append(BoardRow([0] * self._code_length))
         return board
@@ -110,62 +113,28 @@ class Board:
             else:
                 print(f"Guess {i + 1}: {'_' * self._code_length}")
 
-    def check_color(self, color: int) -> bool:
-        return 0 <= color < self._num_of_colors
-
     def check_board_row_index(self, board_row_index: int) -> bool:
         return 0 <= board_row_index < self._num_of_guesses
-
-    def validate_code_input(self, code: str) -> list[int]:
-        if len(code) != self._code_length:
-            raise ValueError(
-                f"Code must be exactly {self._code_length} digits long, got '{code}'"
-            )
-        if not code.isdigit():
-            raise ValueError("Code must contain only digits")
-
-        digits: list[int] = list(map(int, code))
-        for digit in digits:
-            if not self.check_color(digit):
-                raise ValueError(
-                    f"Digit {digit} is out of range, must be between 0 and {self._num_of_colors - 1}"
-                )
-        return digits
 
     def validate_secret_code(self, secret_code: str) -> list[int]:
         if secret_code is None:
             raise ValueError("secret code cannot be None")
-        secret_digits = self.validate_code_input(secret_code)
+        secret_digits = validate_code_input(
+            secret_code, self._code_length, self._num_of_colors
+        )
         return secret_digits
-
-    def calculate_bulls_and_cows(self, guess_digits: list[int]) -> tuple[int, int]:
-        if not self._secret_digits:
-            raise ValueError(
-                "Secret code must be set before calculating bulls and cows"
-            )
-
-        bulls_count = 0
-        for i in range(len(self._secret_digits)):
-            if self._secret_digits[i] == guess_digits[i]:
-                bulls_count += 1
-
-        secret_counter = Counter(self._secret_digits)
-        guess_counter = Counter(guess_digits)
-
-        total_matches = 0
-        for digit in guess_counter:
-            if digit in secret_counter:
-                total_matches += min(guess_counter[digit], secret_counter[digit])
-
-        cows_count = total_matches - bulls_count
-        return bulls_count, cows_count
 
     def evaluate_guess(self, board_row_index: int, guess: str) -> None:
         if not self.check_board_row_index(board_row_index):
             raise ValueError("Row index is out of range")
 
-        guess_digits = self.validate_code_input(guess)
-        bulls_count, cows_count = self.calculate_bulls_and_cows(guess_digits)
+        guess_digits = validate_code_input(
+            guess, self._code_length, self._num_of_colors
+        )
+        bulls_count, cows_count = calculate_bulls_and_cows(
+            self._secret_digits, guess_digits
+        )
+
         self.set_board_row(bulls_count, cows_count, guess_digits, board_row_index)
 
         if self._board[board_row_index].is_winning_row:

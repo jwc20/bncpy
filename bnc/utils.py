@@ -1,6 +1,101 @@
 import random
+from collections import Counter
+from encodings.punycode import digits
 
 import httpx
+
+
+# TODO: implement this
+class CodeInputStrategyValidator:
+    @staticmethod
+    def validate(self, code: str, code_length: int, num_of_colors: int) -> list[int]:
+        self._check_code_length(code, code_length)
+        self._check_code_digits(code)
+        digits = list(map(int, code))
+        for digit in digits:
+            self._check_color(digit, num_of_colors)
+        return digits
+    
+    def _check_code_length(self, code: str, code_length: int) -> None:
+        if len(code) != code_length:
+            raise ValueError(
+                f"Code must be exactly {code_length} digits long, got '{code}'"
+            )
+    def _check_code_digits(self, code: str) -> None:
+        if not code.isdigit():
+            raise ValueError("Code must contain only digits")
+        
+        
+    def _check_color(self, color: int, num_of_colors: int) -> bool:
+        return 0 < color <= num_of_colors
+
+import httpx
+
+
+
+
+
+# TODO: deprecate
+def check_color(color: int, num_of_colors: int) -> bool:
+    return 0 < color <= num_of_colors
+
+# TODO: deprecate
+def validate_code_input(code: str, code_length: int, num_of_colors: int) -> list[int]:
+    if len(code) != code_length:
+        raise ValueError(
+            f"Code must be exactly {code_length} digits long, got '{code}'"
+        )
+    if not code.isdigit():
+        raise ValueError("Code must contain only digits")
+
+    digits: list[int] = list(map(int, code))
+    for digit in digits:
+        if not check_color(digit, num_of_colors):
+            raise ValueError(
+                f"Digit {digit} is out of range, must be between 0 and {num_of_colors - 1}"
+            )
+    return digits
+
+
+
+
+    if maximum <= 0:
+        raise ValueError("Maximum value must be greater than minimum")
+
+    params = {
+        "num": number,
+        "min": 0,
+        "max": maximum,
+        "col": 1,
+        "base": base,
+        "format": "plain",
+        "rnd": "new",
+    }
+
+def calculate_bulls_and_cows(
+    secret_digits: list[int], guess_digits: list[int]
+) -> tuple[int, int]:
+    if not secret_digits:
+        raise ValueError("Secret code must be set before calculating bulls and cows")
+
+    bulls_count = 0
+    for i in range(len(secret_digits)):
+        if secret_digits[i] == guess_digits[i]:
+            bulls_count += 1
+
+    secret_counter = Counter(secret_digits)
+    guess_counter = Counter(guess_digits)
+
+    total_matches = 0
+    for digit in guess_counter:
+        if digit in secret_counter:
+            total_matches += min(guess_counter[digit], secret_counter[digit])
+
+    cows_count = total_matches - bulls_count
+    return bulls_count, cows_count
+
+
+
 
 
 def generate_guess(code_length: int, number_of_colors: int) -> str:
@@ -11,11 +106,19 @@ def generate_guess(code_length: int, number_of_colors: int) -> str:
 
 
 def get_random_number(
-    number: int | None = 4,
-    maximum: int | None = 7,
+    number: int = 4,
+    minimum: int | None = 1,
+    maximum: int = 7,
     base: int | None = 10,
 ) -> str:
+    """generates random number from minimum to maximum inclusive"""
     # response type should be a string since converting to int removes leading zeros (EX: 0000 -> 0)
+
+    if minimum is None:
+        minimum = 1
+    
+    if minimum < 1 and minimum >= maximum:
+        raise ValueError("Minimum should be greater than one and less than the maximum")
 
     if maximum <= 0:
         raise ValueError("Maximum value must be greater than minimum")
@@ -25,7 +128,7 @@ def get_random_number(
 
     params = {
         "num": number,
-        "min": 0,
+        "min": minimum,
         "max": maximum,
         "col": 1,
         "base": base,

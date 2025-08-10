@@ -16,6 +16,8 @@ idna==3.10
     # via
     #   anyio
     #   httpx
+jsonpickle==4.1.1
+    # via bncpy (pyproject.toml)
 sniffio==1.3.1
     # via anyio
 typing-extensions==4.14.1

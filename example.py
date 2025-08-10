@@ -2,102 +2,92 @@ import logging
 
 from bnc import Board, Game, Player
 from bnc.utils import generate_guess, get_random_number
+from bnc.state import GameConfig, GameMode, GameState
+
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 
 if __name__ == "__main__":
-    _code_length = 4
-    _number_of_colors = 6
-    _num_of_guesses = 10
-    player_names = ["Soo", "Benjamin", "Charlotte"]
+    # Test Examples
 
-    # Either set the secret code as number string
-    # _secret_code = "1234"
+    print("=" * 60)
+    print("EXAMPLE 1: SINGLE BOARD MODE (Collaborative)")
+    print("=" * 60)
 
-    # Or generate a random number string
-    _secret_code = get_random_number(number=_code_length, maximum=_number_of_colors - 1)
+    config = GameConfig(code_length=4, num_of_colors=6, num_of_guesses=10)
+    state = GameState(config=config, mode=GameMode.SINGLE_BOARD)
 
-    # There multiple ways to set the secret code
-    # Option 1: Set the secret code in the Board class (for all players)
-    # Option 2: Set the secret code in the Player class (for individual player)
-    # Option 3: Set the secret code in the Game class (for all players)
+    # Add players
+    state.add_player("Alice")
+    state.add_player("Bob")
+    state.add_player("Charlie")
 
-    config = {
-        "code_length": _code_length,
-        "num_of_colors": _number_of_colors,
-        "num_of_guesses": _num_of_guesses,
-        # "secret_code": _secret_code,              # Option 1
-    }
+    print(f"Secret code: {state.config.secret_code}")
+    print(f"Players: {state.players}")
 
-    _players = [Player(name=name, board=Board(**config)) for name in player_names]
+    # Players take turns guessing
+    result = state.submit_guess("Alice", "1234")
+    print(
+        f"\nAlice guesses 1234: Bulls={result['guesses'][-1]['bulls']}, Cows={result['guesses'][-1]['cows']}"
+    )
 
-    # Option 2
-    player_jae = Player(name="Jae", board=Board(**config))
-    player_jae.set_secret_code_to_board("1234")
-    players = _players + [player_jae]
+    result = state.submit_guess("Bob", "5432")
+    print(
+        f"Bob guesses 5432: Bulls={result['guesses'][-1]['bulls']}, Cows={result['guesses'][-1]['cows']}"
+    )
 
-    # Option 3
-    game = Game(players, secret_code=_secret_code)
+    result = state.submit_guess("Charlie", "1111")
+    print(
+        f"Charlie guesses 1111: Bulls={result['guesses'][-1]['bulls']}, Cows={result['guesses'][-1]['cows']}"
+    )
 
-    # leave secret_code as None to generate a random secret code
-    # game = Game(players)
+    print(f"\nGame status:")
+    print(f"  - Current row: {state.current_row}")
+    print(f"  - Remaining guesses: {state.remaining_guesses}")
+    print(f"  - Game over: {state.game_over}")
+    print(f"  - Game won: {state.game_won}")
 
-    # to generate new random secret code
-    # game.set_random_secret_code()
+    # Test JSON serialization
+    json_data = state.to_json()
+    print(f"\nJSON data: {json_data}")
+    print(f"\nJSON length: {len(json_data)} bytes")
 
-    print(game.state)
-    print(" ")
+    # Test deserialization
+    loaded_state = GameState.from_json(json_data, config)
+    print("loaded_state:" + str(loaded_state))
+    print(f"Loaded state has {len(loaded_state.all_guesses)} guesses")
 
-    for _ in range(10):
-        game.submit_guess(
-            game.players[0], generate_guess(_code_length, _number_of_colors)
+    print("\n" + "=" * 60)
+    print("EXAMPLE 2: MULTI BOARD MODE (Competitive)")
+    print("=" * 60)
+
+    config2 = GameConfig(code_length=4, num_of_colors=6, num_of_guesses=10)
+    state2 = GameState(config=config2, mode=GameMode.MULTI_BOARD)
+
+    # Add players
+    state2.add_player("Player1")
+    state2.add_player("Player2")
+
+    print(f"Secret code: {state2.config.secret_code}")
+    print(f"Players: {state2.players}")
+
+    # Each player makes their own guesses
+    state2.submit_guess("Player1", "1234")
+    state2.submit_guess("Player1", "2345")
+    state2.submit_guess("Player2", "3456")
+
+    print(f"\nPlayer states:")
+    for name, pstate in state2.player_states.items():
+        print(
+            f"  {name}: {pstate.current_row} guesses, remaining: {pstate.remaining_guesses}"
         )
-        game.submit_guess(
-            game.players[1], generate_guess(_code_length, _number_of_colors)
-        )
-        game.submit_guess(
-            game.players[2], generate_guess(_code_length, _number_of_colors)
-        )
 
-    print(game.state)
+    print("\n" + "=" * 60)
+    print("EXAMPLE 3: MODE SWITCHING")
+    print("=" * 60)
 
-    print(f"player: {game.players[0].name}")
-    game.players[0].board.display_board()
-    print(game.players[0].game_won)
-    print(game.players[0].game_over)
-    print("###############")
-    print(" ")
+    config3 = GameConfig(code_length=4, num_of_colors=6, num_of_guesses=10)
+    state3 = GameState(config=config3, mode=GameMode.SINGLE_BOARD)
 
-    print(f"player: {game.players[1].name}")
-    game.players[1].board.display_board()
-    print(game.players[1].game_won)
-    print(game.players[1].game_over)
-    print("###############")
-    print(" ")
-
-    print(f"player: {game.players[2].name}")
-    game.players[2].board.display_board()
-    print("###############")
-    print(game.players[2].game_won)
-    print(game.players[2].game_over)
-    print(" ")
-
-    game.submit_guess(game.players[3], "1234")
-    game.submit_guess(game.players[3], "1112")  # cannot guess since the game is over
-
-    print(f"player: {game.players[3].name}")
-    game.players[3].board.display_board()
-    print(game.players[3].game_won)
-    print(game.players[3].game_over)
-    print("###############")
-    print(" ")
-
-    if game.winners:
-        for player in game.winners:
-            print(player.name)
-
-    for player in game.players:
-        print(player.board.secret_code)
-
-    print(game.state)
+    print(f"Initial mode: {state3.mode.value}")

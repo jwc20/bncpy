@@ -37,6 +37,7 @@ game = Game(players, secret_code=secret_code)
 game.submit_guess(players[0], "1234")
 game.submit_guess(players[1], generate_guess(code_length, num_of_colors))  # Random guess
 
+
 # Check game state
 print(game.state)
 players[0].board.display_board()
