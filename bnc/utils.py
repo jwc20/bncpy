@@ -29,6 +29,9 @@ class CodeInputStrategyValidator:
     def _check_color(self, color: int, num_of_colors: int) -> bool:
         return 0 < color <= num_of_colors
 
+import httpx
+
+
 
 
 
@@ -56,8 +59,18 @@ def validate_code_input(code: str, code_length: int, num_of_colors: int) -> list
 
 
 
+    if maximum <= 0:
+        raise ValueError("Maximum value must be greater than minimum")
 
-
+    params = {
+        "num": number,
+        "min": 0,
+        "max": maximum,
+        "col": 1,
+        "base": base,
+        "format": "plain",
+        "rnd": "new",
+    }
 
 def calculate_bulls_and_cows(
     secret_digits: list[int], guess_digits: list[int]

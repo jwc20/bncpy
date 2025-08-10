@@ -134,6 +134,7 @@ class Board:
         bulls_count, cows_count = calculate_bulls_and_cows(
             self._secret_digits, guess_digits
         )
+
         self.set_board_row(bulls_count, cows_count, guess_digits, board_row_index)
 
         if self._board[board_row_index].is_winning_row:
