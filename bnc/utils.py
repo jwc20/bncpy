@@ -27,14 +27,14 @@ class CodeInputStrategyValidator:
         
         
     def _check_color(self, color: int, num_of_colors: int) -> bool:
-        return 0 <= color < num_of_colors
+        return 0 < color <= num_of_colors
 
 
 
 
 # TODO: deprecate
 def check_color(color: int, num_of_colors: int) -> bool:
-    return 0 <= color < num_of_colors
+    return 0 < color <= num_of_colors
 
 # TODO: deprecate
 def validate_code_input(code: str, code_length: int, num_of_colors: int) -> list[int]:
@@ -94,10 +94,18 @@ def generate_guess(code_length: int, number_of_colors: int) -> str:
 
 def get_random_number(
     number: int = 4,
+    minimum: int | None = 1,
     maximum: int = 7,
     base: int | None = 10,
 ) -> str:
+    """generates random number from minimum to maximum inclusive"""
     # response type should be a string since converting to int removes leading zeros (EX: 0000 -> 0)
+
+    if minimum is None:
+        minimum = 1
+    
+    if minimum < 1 and minimum >= maximum:
+        raise ValueError("Minimum should be greater than one and less than the maximum")
 
     if maximum <= 0:
         raise ValueError("Maximum value must be greater than minimum")
@@ -107,8 +115,8 @@ def get_random_number(
 
     params = {
         "num": number,
-        "min": 1,
-        "max": maximum - 1,
+        "min": minimum,
+        "max": maximum,
         "col": 1,
         "base": base,
         "format": "plain",
