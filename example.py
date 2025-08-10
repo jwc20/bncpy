@@ -4,6 +4,7 @@ from bnc import Board, Game, Player
 from bnc.utils import generate_guess, get_random_number
 from bnc.state import GameConfig, GameMode, GameState
 
+
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 
