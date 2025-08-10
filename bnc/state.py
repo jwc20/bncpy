@@ -7,7 +7,7 @@ from enum import Enum
 import jsonpickle
 
 from . import Board, Game, Player
-from .utils import get_random_number
+from .utils import calculate_bulls_and_cows, get_random_number, validate_code_input
 
 
 class GameMode(Enum):
@@ -332,41 +332,27 @@ class GameState:
         if self.game_over:
             return {"error": "Game is already over"}
 
-        if not self.game_started:
-            self.game_started = True
-
-        game = self.to_game()
-
-        if self.mode == GameMode.SINGLE_BOARD:
-            player = game.players[0]
-        else:
-            player = None
-            for p in game.players:
-                if p.name == player_name:
-                    player = p
-                    break
-
-            if not player:
-                board = self._create_board()
-                player = Player(name=player_name, board=board)
-                game.players.append(player)
-                self.add_player(player_name)
-
         try:
-            prev_guess_count = len(self.all_guesses)
-            game.submit_guess(player, guess)
+            guess_digits = validate_code_input(
+                guess, self.config.code_length, self.config.num_of_colors
+            )
+            bulls, cows = calculate_bulls_and_cows(
+                validate_code_input(self.config.secret_code, self.config.code_length, self.config.num_of_colors), guess_digits # TODO: change to self.validate_secret_code() and/or optimize
+            )
 
-            new_state = GameState.from_game(game, self.config, self.mode, self)
+            guess_entry = PlayerGuess(
+                guess=guess, bulls=bulls, cows=cows, player=player_name
+            )
 
-            if self.mode == GameMode.SINGLE_BOARD and prev_guess_count < len(
-                new_state.all_guesses
-            ):
-                new_state.all_guesses[-1].player = player_name
+            if self.mode == GameMode.SINGLE_BOARD:
+                self.all_guesses.append(guess_entry)
+            else:
+                # TODO
+                pass
 
-            self.all_guesses = new_state.all_guesses
-            self.player_states = new_state.player_states
-            self.winners = new_state.winners
-
+            if bulls == self.config.code_length:
+                self._game_won = True
+                self._game_over = True
             return self.to_dict()
 
         except ValueError as e:

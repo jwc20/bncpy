@@ -125,6 +125,8 @@ class Board:
         return secret_digits
 
     def evaluate_guess(self, board_row_index: int, guess: str) -> None:
+        if not self._secret_digits:
+            raise ValueError("Secret code must be set before evaluating guesses")
         if not self.check_board_row_index(board_row_index):
             raise ValueError("Row index is out of range")
 
