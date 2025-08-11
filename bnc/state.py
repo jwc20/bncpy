@@ -83,10 +83,11 @@ class PlayerState:
 
 @dataclass
 class GameConfig:
-    code_length: int = 4
-    num_of_colors: int = 6
-    num_of_guesses: int = 10
-    secret_code: str | None = None
+    code_length: int
+    num_of_colors: int
+    num_of_guesses: int
+    secret_code: str | None
+    game_type: int  # TODO : validate
 
     def validate(self):
         if self.code_length < 3:
@@ -111,15 +112,18 @@ class GameConfig:
             "num_of_colors": self.num_of_colors,
             "num_of_guesses": self.num_of_guesses,
             "secret_code": self.secret_code,
+            "game_type": self.game_type,
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> GameConfig:
+        print(data)
         return cls(
             code_length=data.get("code_length", 4),
             num_of_colors=data.get("num_of_colors", 6),
             num_of_guesses=data.get("num_of_guesses", 10),
             secret_code=data.get("secret_code"),
+            game_type=data.get("game_type"),
         )
 
     def to_json(self) -> str:
@@ -185,14 +189,16 @@ class GameState:
     def add_player(self, player_name: str) -> None:
         if player_name not in self.players:
             self.players.append(player_name)
-
-            if (
-                self.mode == GameMode.MULTI_BOARD
-                and player_name not in self.player_states
-            ):
-                self.player_states[player_name] = PlayerState(
-                    name=player_name, remaining_guesses=self.config.num_of_guesses
-                )
+            self.player_states[player_name] = PlayerState(
+                name=player_name, remaining_guesses=self.config.num_of_guesses
+            )
+            # if (
+            #     self.mode == GameMode.MULTI_BOARD
+            #     and player_name not in self.player_states
+            # ):
+            #     self.player_states[player_name] = PlayerState(
+            #         name=player_name, remaining_guesses=self.config.num_of_guesses
+            #     )
 
     def remove_player(self, player_name: str) -> None:
         if player_name in self.players:
@@ -205,11 +211,15 @@ class GameState:
         self.winners = []
         self.game_started = False
 
-        if self.mode == GameMode.MULTI_BOARD:
-            for player_name in self.players:
-                self.player_states[player_name] = PlayerState(
-                    name=player_name, remaining_guesses=self.config.num_of_guesses
-                )
+        for player_name in self.players:
+            self.player_states[player_name] = PlayerState(
+                name=player_name, remaining_guesses=self.config.num_of_guesses
+            )
+        # if self.mode == GameMode.MULTI_BOARD:
+        #     for player_name in self.players:
+        #         self.player_states[player_name] = PlayerState(
+        #             name=player_name, remaining_guesses=self.config.num_of_guesses
+        #         )
 
     def _create_board(self) -> Board:
         return Board(
@@ -298,15 +308,24 @@ class GameState:
                         )
                         player_guesses.append(guess_entry)
                         all_guesses.append(guess_entry)
-
-                player_states[player.name] = PlayerState(
-                    name=player.name,
-                    guesses=player_guesses,
-                    current_row=len(player_guesses),
-                    game_over=board.game_over,
-                    game_won=board.game_won,
-                    remaining_guesses=config.num_of_guesses - len(player_guesses),
-                )
+                if config.game_type == 2:
+                    player_states[player.name] = PlayerState(
+                        name=player.name,
+                        guesses=player_guesses,
+                        current_row=len(player_guesses),
+                        game_over=board.game_over,
+                        game_won=board.game_won,
+                        remaining_guesses=100,  # dont need to track remaining guesses
+                    )
+                else:
+                    player_states[player.name] = PlayerState(
+                        name=player.name,
+                        guesses=player_guesses,
+                        current_row=len(player_guesses),
+                        game_over=board.game_over,
+                        game_won=board.game_won,
+                        remaining_guesses=config.num_of_guesses - len(player_guesses),
+                    )
 
         players = existing_state.players if existing_state else []
         if not players:
@@ -327,7 +346,7 @@ class GameState:
         )
 
     def submit_guess(self, player_name: str, guess: str) -> dict:
-        if self.game_over:
+        if self.game_over and self.config.game_type != 2:
             return {"error": "Game is already over"}
 
         try:
@@ -370,26 +389,64 @@ class GameState:
         return cls.from_dict(data, config)
 
     def to_dict(self):
-        base_dict = {
-            "config": self.config.to_dict(),  # Add config serialization
-            "mode": self.mode.value,
-            "players": self.players,
-            "guesses": [g.to_dict() for g in self.all_guesses],
-            "game_over": self.game_over,
-            "game_won": self.game_won,
-            "winners": self.winners,
-            "game_started": self.game_started,
-            "current_row": self.current_row,
-            "remaining_guesses": self.remaining_guesses,
-            "secret_code": self.config.secret_code if self.game_over else None,
-        }
-
-        if self.mode == GameMode.MULTI_BOARD:
-            base_dict["players_data"] = {
-                name: state.to_dict() for name, state in self.player_states.items()
+        if self.config.game_type == 2:
+            return {
+                "config": self.config.to_dict(),
+                "mode": self.mode.value,
+                "players": self.players,
+                "guesses": [g.to_dict() for g in self.all_guesses],
+                "game_over": False,  # TODO:
+                "game_won": self.game_won,
+                "winners": self.winners,
+                "game_started": self.game_started,
+                "current_row": self.current_row,
+                "remaining_guesses": 100,  # TODO
+                "secret_code": self.config.secret_code if self.game_over else None,
+                "players_data": {
+                    name: state.to_dict() for name, state in self.player_states.items()
+                },
+            }
+        else:
+            base_dict = {
+                "config": self.config.to_dict(),
+                "mode": self.mode.value,
+                "players": self.players,
+                "guesses": [g.to_dict() for g in self.all_guesses],
+                "game_over": self.game_over,
+                "game_won": self.game_won,
+                "winners": self.winners,
+                "game_started": self.game_started,
+                "current_row": self.current_row,
+                "remaining_guesses": self.remaining_guesses,
+                "secret_code": self.config.secret_code if self.game_over else None,
+                "players_data": {
+                    name: state.to_dict() for name, state in self.player_states.items()
+                },
             }
 
         return base_dict
+
+    # def to_dict(self):
+    #     base_dict = {
+    #         "config": self.config.to_dict(),  # Add config serialization
+    #         "mode": self.mode.value,
+    #         "players": self.players,
+    #         "guesses": [g.to_dict() for g in self.all_guesses],
+    #         "game_over": self.game_over,
+    #         "game_won": self.game_won,
+    #         "winners": self.winners,
+    #         "game_started": self.game_started,
+    #         "current_row": self.current_row,
+    #         "remaining_guesses": self.remaining_guesses,
+    #         "secret_code": self.config.secret_code if self.game_over else None,
+    #     }
+    #
+    #     if self.mode == GameMode.MULTI_BOARD:
+    #         base_dict["players_data"] = {
+    #             name: state.to_dict() for name, state in self.player_states.items()
+    #         }
+    #
+    #     return base_dict
 
     @classmethod
     def from_dict(cls, data: dict, config: GameConfig | None = None) -> GameState:
@@ -407,7 +464,7 @@ class GameState:
         game_started = data.get("game_started", False)
 
         player_states = {}
-        if mode == GameMode.MULTI_BOARD and "players_data" in data:
+        if "players_data" in data:
             for name, player_data in data["players_data"].items():
                 player_states[name] = PlayerState.from_dict(player_data)
 
