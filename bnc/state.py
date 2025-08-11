@@ -87,14 +87,14 @@ class GameConfig:
     num_of_colors: int
     num_of_guesses: int
     secret_code: str | None
-    game_type: int  # TODO : validate
+    game_type: int | None = 0  # TODO : validate
 
     def validate(self):
         if self.code_length < 3:
             raise ValueError(f"code_length must be at least 3, got {self.code_length}")
-        if self.num_of_colors < 5:
+        if self.num_of_colors < 4:
             raise ValueError(
-                f"num_of_colors must be at least 5, got {self.num_of_colors}"
+                f"num_of_colors must be at least 4, got {self.num_of_colors}"
             )
         if self.num_of_guesses < 1:
             raise ValueError(
