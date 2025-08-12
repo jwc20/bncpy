@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
+from collections import Counter
 
 import jsonpickle
 
@@ -167,16 +168,29 @@ class GameState:
                 g.bulls == self.config.code_length for g in self.all_guesses
             )
         else:
-            if not self.player_states:
+            if not self.all_guesses:
                 return False
-            return all(ps.game_over for ps in self.player_states.values())
+            else:
+                player_guess_counts = Counter(g.player for g in self.all_guesses)
+                return all(
+                    gc == self.config.num_of_guesses
+                    for gc in player_guess_counts.values()
+                )
+        # TODO   
+        # else:
+        #     if not self.player_states:
+        #         return False
+        #     return all(ps.game_over for ps in self.player_states.values())
 
     @property
     def game_won(self):
-        if self.mode == GameMode.SINGLE_BOARD:
-            return any(g.bulls == self.config.code_length for g in self.all_guesses)
-        else:
-            return any(ps.game_won for ps in self.player_states.values())
+        return any(g.bulls == self.config.code_length for g in self.all_guesses)
+    
+        # TODO
+        # if self.mode == GameMode.SINGLE_BOARD:
+        #     return any(g.bulls == self.config.code_length for g in self.all_guesses)
+        # else:
+        #     return any(ps.game_won for ps in self.player_states.values())
 
     @property
     def current_row(self):
