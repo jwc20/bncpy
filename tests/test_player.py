@@ -1,67 +1,133 @@
-from unittest.mock import Mock, patch
+import pytest
+from unittest.mock import patch, Mock
+from bnc import Board, Player
 
-from bnc.board import Board
-from bnc.player import Player
+
+class TestPlayerInitialization:
+    def test_basic_initialization(self):
+        board = Board()
+        player = Player("Alice", board)
+        assert player.name == "Alice"
+        assert player.board is board
+
+    def test_player_with_configured_board(self):
+        board = Board(code_length=5, num_of_colors=8)
+        player = Player("Bob", board)
+        assert player.board.code_length == 5
+        assert player.board.num_of_colors == 8
 
 
-class TestPlayer:
-    """Test cases for the Player class."""
-
-    def test_player_initialization(self):
-        """Test Player initialization."""
-        board = Mock(spec=Board)
-        player = Player("TestPlayer", board)
-
-        assert player.name == "TestPlayer"
-        assert player.board == board
-
+class TestPlayerProperties:
     def test_game_over_property(self):
-        """Test game_over property delegation."""
-        board = Mock(spec=Board)
-        board.game_over = True
-        player = Player("TestPlayer", board)
+        board = Board(secret_code="1234", num_of_guesses=1)
+        player = Player("Alice", board)
 
+        assert player.game_over is False
+        player.make_guess("5555")
         assert player.game_over is True
 
     def test_game_won_property(self):
-        """Test game_won property delegation."""
-        board = Mock(spec=Board)
-        board.game_won = True
-        player = Player("TestPlayer", board)
+        board = Board(secret_code="1234")
+        player = Player("Alice", board)
 
+        assert player.game_won is False
+        player.make_guess("1234")
         assert player.game_won is True
 
-    def test_set_secret_code_to_board(self):
-        """Test set_secret_code_to_board delegation."""
-        board = Mock(spec=Board)
-        player = Player("TestPlayer", board)
+    def test_properties_delegation(self):
+        board = Mock()
+        board.game_over = True
+        board.game_won = False
+
+        player = Player("Alice", board)
+        assert player.game_over is True
+        assert player.game_won is False
+
+
+class TestSetSecretCode:
+    def test_set_secret_code(self):
+        board = Board()
+        player = Player("Alice", board)
 
         player.set_secret_code_to_board("1234")
-        assert board.secret_code == "1234"
+        assert player.board.secret_code == "1234"
 
-    @patch("bnc.player.logger")
-    def test_make_guess_normal(self, mock_logger):
-        """Test make_guess in normal conditions."""
-        board = Mock(spec=Board)
-        board.game_over = False
-        board.current_board_row_index = 0
+    def test_set_none_secret_code(self):
+        board = Board()
+        player = Player("Alice", board)
 
-        player = Player("TestPlayer", board)
+        with pytest.raises(ValueError, match="secret code cannot be None"):
+            player.set_secret_code_to_board(None)
+
+
+class TestMakeGuess:
+    def test_successful_guess(self):
+        board = Board(secret_code="1234")
+        player = Player("Alice", board)
+
+        player.make_guess("1234")
+        assert player.game_won is True
+        assert board.board[0].bulls == 4
+
+    def test_incorrect_guess(self):
+        board = Board(secret_code="1234")
+        player = Player("Alice", board)
+
+        player.make_guess("5555")
+        assert player.game_won is False
+        assert board.board[0].bulls == 0
+
+    def test_multiple_guesses(self):
+        board = Board(secret_code="1234")
+        player = Player("Alice", board)
+
+        player.make_guess("5555")
+        player.make_guess("1111")
         player.make_guess("1234")
 
-        board.evaluate_guess.assert_called_once_with(0, "1234")
-        mock_logger.info.assert_not_called()
+        assert board.board[0].guess == [5, 5, 5, 5]
+        assert board.board[1].guess == [1, 1, 1, 1]
+        assert board.board[2].guess == [1, 2, 3, 4]
+        assert player.game_won is True
 
-    @patch("bnc.player.logger")
-    def test_make_guess_game_over(self, mock_logger):
-        """Test make_guess when game is over."""
-        board = Mock(spec=Board)
-        board.game_over = True
+    def test_invalid_guess_format(self):
+        board = Board(secret_code="1234")
+        player = Player("Alice", board)
 
-        player = Player("TestPlayer", board)
-        player.make_guess("1234")
+        with pytest.raises(ValueError, match="Code must contain only digits"):
+            player.make_guess("12ab")
 
-        board.evaluate_guess.assert_not_called()
-        mock_logger.info.assert_called_once_with(
-            "%s has no more guesses.", "TestPlayer"
-        )
+    def test_invalid_guess_length(self):
+        board = Board(secret_code="1234")
+        player = Player("Alice", board)
+
+        with pytest.raises(ValueError, match="Code must be exactly 4 digits long"):
+            player.make_guess("123")
+
+    def test_invalid_guess_range(self):
+        board = Board(secret_code="1234", num_of_colors=6)
+        player = Player("Alice", board)
+
+        with pytest.raises(ValueError, match="Digit 7 is out of range"):
+            player.make_guess("1237")
+
+
+class TestPlayerBoardInteraction:
+    def test_board_state_tracking(self):
+        board = Board(secret_code="1234")
+        player = Player("Alice", board)
+
+        assert board.current_board_row_index == 0
+        player.make_guess("5555")
+        assert board.current_board_row_index == 1
+        player.make_guess("6666")
+        assert board.current_board_row_index == 2
+
+    def test_board_reference_not_copy(self):
+        board = Board(secret_code="1234")
+        player = Player("Alice", board)
+
+        player.make_guess("5555")
+        assert board.board[0].is_filled is True
+        assert player.board.board[0].is_filled is True
+        assert board is player.board
