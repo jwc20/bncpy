@@ -83,11 +83,11 @@ class PlayerState:
 
 @dataclass
 class GameConfig:
-    code_length: int
-    num_of_colors: int
-    num_of_guesses: int
-    secret_code: str | None
-    game_type: int | None = 0  # TODO : validate
+    code_length: int = 4
+    num_of_colors: int = 6
+    num_of_guesses: int = 10
+    secret_code: str | None = None
+    game_type: int = 1  # TODO : validate
 
     def validate(self):
         if self.code_length < 3:
@@ -123,7 +123,7 @@ class GameConfig:
             num_of_colors=data.get("num_of_colors", 6),
             num_of_guesses=data.get("num_of_guesses", 10),
             secret_code=data.get("secret_code"),
-            game_type=data.get("game_type"),
+            game_type=data.get("game_type", 1),
         )
 
     def to_json(self) -> str:
@@ -365,12 +365,7 @@ class GameState:
             guess_entry = PlayerGuess(
                 guess=guess, bulls=bulls, cows=cows, player=player_name
             )
-
-            if self.mode == GameMode.SINGLE_BOARD:
-                self.all_guesses.append(guess_entry)
-            else:
-                # TODO
-                pass
+            self.all_guesses.append(guess_entry)
 
             if bulls == self.config.code_length:
                 self._game_won = True
@@ -450,14 +445,12 @@ class GameState:
 
     @classmethod
     def from_dict(cls, data: dict, config: GameConfig | None = None) -> GameState:
-        # If config is in the data, use it; otherwise use the provided config
-        if "config" in data:
-            config = GameConfig.from_dict(data["config"])
-        elif config is None:
-            # If no config provided and not in data, use defaults
-            config = GameConfig()
+        mode = GameMode.SINGLE_BOARD
+        if config:
+            game_type = data.get("game_type", config.game_type)
+            if game_type == 2:
+                mode = GameMode.MULTI_BOARD
 
-        mode = GameMode(data.get("mode", "SINGLE_BOARD"))
         players = data.get("players", [])
         all_guesses = [PlayerGuess.from_dict(g) for g in data.get("guesses", [])]
         winners = data.get("winners", [])
