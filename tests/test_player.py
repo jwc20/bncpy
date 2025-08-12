@@ -1,5 +1,7 @@
+from unittest.mock import Mock
+
 import pytest
-from unittest.mock import patch, Mock
+
 from bnc import Board, Player
 
 

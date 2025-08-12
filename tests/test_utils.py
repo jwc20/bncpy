@@ -1,12 +1,14 @@
-import pytest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 import httpx
+import pytest
+
 from bnc.utils import (
-    check_color,
-    validate_code_input,
     calculate_bulls_and_cows,
+    check_color,
     generate_guess,
     get_random_number,
+    validate_code_input,
 )
 
 

@@ -1,7 +1,8 @@
-import pytest
 from unittest.mock import patch
-from bnc import Board, Game, Player, GameConfig, GameMode, GameState
-from bnc.utils import generate_guess, get_random_number
+
+import pytest
+
+from bnc import Board, Game, GameConfig, GameMode, GameState, Player
 
 
 class TestSinglePlayerGame:
