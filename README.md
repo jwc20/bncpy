@@ -57,3 +57,4 @@ if game.winners:
 ## Dependencies
 
 - [httpx](https://github.com/encode/httpx)
+- [jsonpickle](https://github.com/jsonpickle/jsonpickle)
