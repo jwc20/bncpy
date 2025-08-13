@@ -232,11 +232,7 @@ Build bncpy from the source and intsall dependencies:
 Alternatively, you can pip install:
 
 ```bash
-# Install package from PyPi
 pip install bncpy
-
-# or, clone the repo
-git clone https://github.com/jwc20/bncpy.git
 ```
 
 ### Usage
