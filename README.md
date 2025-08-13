@@ -2,10 +2,21 @@
 
 Benjamin and Charlotte python library
 
+Demo: https://bnc-client-psi.vercel.app
+
+Docs: https://jwc20.github.io/bnc-docs/
+
+Mono-repo: https://github.com/jwc20/bnc-game
+
+
 ## Installation
 
 ```bash
+# Install package from PyPi
 pip install bncpy
+
+# or, clone the repo
+git clone https://github.com/jwc20/bncpy.git
 ```
 
 ## Usage
@@ -46,6 +57,9 @@ if game.winners:
   for winner in game.winners:
     print(f"Winner: {winner.name}")
 ```
+
+Check out example.py for more.
+
 
 ## Setting the secret code
 
