@@ -17,6 +17,14 @@
 
 <!-- default option, no dependency badges. -->
 
+Benjamin and Charlotte python library
+
+Demo: https://bnc-client-psi.vercel.app
+
+Docs: https://jwc20.github.io/bnc-docs/
+
+Mono-repo: https://github.com/jwc20/bnc-game
+
 <!-- default option, no dependency badges. -->
 
 </div>
@@ -46,14 +54,10 @@
 
 bncpy is a robust Python-based game development tool that simplifies the process of creating a code-breaking game.
 
-**Why bncpy?**
-
 This project streamlines the game development process, providing a comprehensive suite of features for building a Bulls and Cows game. The core features include:
 
 - **Game Logic Management:** Handles the setup, progress, and conclusion of the game, ensuring a smooth gaming experience.
 - **Game State Management:** Manages game state, player state, and game configuration, maintaining the integrity of the game.
-- **Player Representation:** Maintains player's name and game board, providing a clear representation of a player in a game.
-- **Automated Publishing:** Automates the process of packaging and uploading Python projects to PyPI, saving time and reducing errors.
 
 ---
 
