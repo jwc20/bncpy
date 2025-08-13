@@ -1,6 +1,6 @@
 # bncpy
 
-Benjamin and Charlotte
+Benjamin and Charlotte python library
 
 ## Installation
 
