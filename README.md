@@ -25,6 +25,11 @@ Docs: https://jwc20.github.io/bnc-docs/
 
 Mono-repo: https://github.com/jwc20/bnc-game
 
+BE: https://github.com/jwc20/bncapi
+
+FE: https://github.com/jwc20/bnc-client
+
+
 <!-- default option, no dependency badges. -->
 
 </div>
@@ -42,11 +47,6 @@ Mono-repo: https://github.com/jwc20/bnc-game
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Usage](#usage)
-  - [Testing](#testing)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgments](#acknowledgments)
 
 ---
 
@@ -209,38 +209,35 @@ Build bncpy from the source and intsall dependencies:
 
 1. **Clone the repository:**
 
-   ```sh
-   ❯ git clone https://github.com/jwc20/bncpy
-   ```
+```sh
+git clone https://github.com/jwc20/bncpy
+```
 
 2. **Navigate to the project directory:**
 
-   ```sh
-   ❯ cd bncpy
-   ```
+```sh
+cd bncpy
+```
 
 3. **Install the dependencies:**
 
 <!-- SHIELDS BADGE CURRENTLY DISABLED -->
 
-    ```sh
-    pip install -r requirements.txt
-    ```
+```sh
+pip install -r requirements.txt
+```
 
 <!-- SHIELDS BADGE CURRENTLY DISABLED -->
 
-    ```sh
-    uv sync --all-extras --dev
-    ```
+```sh
+uv sync --all-extras --dev
+```
 
 Alternatively, you can pip install:
 
 ```bash
 # Install package from PyPi
 pip install bncpy
-
-# or, clone the repo
-git clone https://github.com/jwc20/bncpy.git
 ```
 
 ### Usage
@@ -270,7 +267,7 @@ game = Game(players, secret_code=secret_code)
 
 # Submit guesses
 game.submit_guess(players[0], "1234")
-game.submit_guess(players[1], generate_guess(code_length, num_of_colors))  # Random guess
+game.submit_guess(players[1], generate_guess(config["code_length"], config["num_of_colors"]))  # Random guess
 
 # Check game state
 print(game.state)
@@ -291,7 +288,7 @@ if game.winners:
 
 ### Testing
 
-Bncpy uses the {**test_framework**} test framework. Run the test suite with:
+Bncpy uses the **pytest** test framework. Run the test suite with:
 
 **Using [pip](https://pypi.org/project/pip/):**
 
@@ -310,49 +307,3 @@ uv run pytest tests/
 - [httpx](https://github.com/encode/httpx)
 - [jsonpickle](https://github.com/jsonpickle/jsonpickle)
 
-## Contributing
-
-<details closed>
-<summary>Contributing Guidelines</summary>
-
-1. **Fork the Repository**: Start by forking the project repository to your github account.
-2. **Clone Locally**: Clone the forked repository to your local machine using a git client.
-   ```sh
-   git clone https://github.com/jwc20/bncpy
-   ```
-3. **Create a New Branch**: Always work on a new branch, giving it a descriptive name.
-   ```sh
-   git checkout -b new-feature-x
-   ```
-4. **Make Your Changes**: Develop and test your changes locally.
-5. **Commit Your Changes**: Commit with a clear message describing your updates.
-   ```sh
-   git commit -m 'Implemented new feature x.'
-   ```
-6. **Push to github**: Push the changes to your forked repository.
-   ```sh
-   git push origin new-feature-x
-   ```
-7. **Submit a Pull Request**: Create a PR against the original project repository. Clearly describe the changes and their motivations.
-8. **Review**: Once your PR is reviewed and approved, it will be merged into the main branch. Congratulations on your contribution!
-</details>
-
-<details closed>
-<summary>Contributor Graph</summary>
-<br>
-<p align="left">
-   <a href="https://github.com{/jwc20/bncpy/}graphs/contributors">
-      <img src="https://contrib.rocks/image?repo=jwc20/bncpy">
-   </a>
-</p>
-</details>
-
----
-
-## License
-
-Bncpy is protected under the [LICENSE](https://choosealicense.com/licenses) License. For more details, refer to the [LICENSE](https://choosealicense.com/licenses/) file.
-
-[back-to-top]: https://img.shields.io/badge/-BACK_TO_TOP-151515?style=flat-square
-
----
