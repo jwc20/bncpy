@@ -58,6 +58,60 @@ def generate_guess(code_length: int, number_of_colors: int) -> str:
     return code
 
 
+async def get_random_number_async(
+    length: int = 4,
+    min_value: int = 1,
+    max_value: int = 7,
+    base: int = 10,
+) -> str:
+    if length <= 0:
+        raise ValueError("Length must be a positive integer.")
+
+    if min_value >= max_value:
+        raise ValueError(
+            f"min_value ({min_value}) must be less than max_value ({max_value})."
+        )
+
+    if base not in [2, 8, 10, 16]:
+        raise ValueError("Base value must be 2, 8, 10, or 16.")
+
+    if min_value < 0:
+        raise ValueError("min_value cannot be negative for this implementation.")
+
+    numbers: list[int]
+    params = {
+        "num": length,
+        "min": min_value,
+        "max": max_value,
+        "col": 1,
+        "base": 10,
+        "format": "plain",
+        "rnd": "new",
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                "https://www.random.org/integers/", params=params, timeout=5.0
+            )
+            response.raise_for_status()
+            numbers_str = response.text.strip().split()
+            if len(numbers_str) != length:
+                raise ValueError(
+                    f"API returned {len(numbers_str)} numbers, expected {length}"
+                )
+            numbers = [int(n) for n in numbers_str]
+        except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as e:
+            # fallback
+            logger.warning(
+                "Failed to get random number from API: %s, falling back to local generation",
+                e,
+            )
+            numbers = [random.randint(min_value, max_value) for _ in range(length)]
+
+        return "".join(map(str, numbers))
+
+
 def get_random_number(
     length: int = 4,
     min_value: int = 1,

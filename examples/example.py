@@ -1,9 +1,7 @@
 import logging
-
-from bnc.state import GameConfig, GameMode, GameState
+from bncpy.bnc import GameConfig, GameMode, GameState
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
-
 
 if __name__ == "__main__":
     # Test Examples

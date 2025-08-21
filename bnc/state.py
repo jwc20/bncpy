@@ -176,7 +176,7 @@ class GameState:
                     gc == self.config.num_of_guesses
                     for gc in player_guess_counts.values()
                 )
-        # TODO   
+        # TODO
         # else:
         #     if not self.player_states:
         #         return False
@@ -185,7 +185,7 @@ class GameState:
     @property
     def game_won(self):
         return any(g.bulls == self.config.code_length for g in self.all_guesses)
-    
+
         # TODO
         # if self.mode == GameMode.SINGLE_BOARD:
         #     return any(g.bulls == self.config.code_length for g in self.all_guesses)
@@ -384,6 +384,7 @@ class GameState:
             if bulls == self.config.code_length:
                 self._game_won = True
                 self._game_over = True
+                self.winners.append(player_name)
             return self.to_dict()
 
         except ValueError as e:
